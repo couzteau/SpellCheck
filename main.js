@@ -56,7 +56,7 @@ define(function (require, exports, module) {
         m.addMenuItem(CHECK_SPELLING);        
     };
 
-    CommandManager.register("Checkk Spelling", CHECK_SPELLING, _check_spelling);
+    CommandManager.register("Check Spelling", CHECK_SPELLING, _check_spelling);
 
 
     var menu = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
