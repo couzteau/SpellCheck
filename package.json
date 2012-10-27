@@ -1,0 +1,40 @@
+{
+   "name": "SpellCheck",
+   "version": "0.1.0",
+   "description": "Spell checking the Adobe Brackets Web Editor.",
+   "keywords": [
+       "extension",
+       "brackets",
+       "strings"
+   ],
+   "maintainers": [
+       {
+           "name": "Couzteau",
+           "email": "couzteau@bitfaeule.net",
+           "web": "https://github.com/couzteau/SpellCheck" 
+       } 
+   ],
+   "contributors": [
+       {
+           "name": "Couzteau",
+           "email": "couzteau@bitfaeule.net",
+           "web": "https://github.com/couzteau/SpellCheck" 
+       } 
+   ],
+   "bugs": {
+       "mail": "couzteau@bitfaeule.net",
+       "web": "https://github.com/couzteau/SpellCheck/issues" 
+   },
+   "licenses": [
+       {
+           "type": "MIT",
+           "url": "https://github.com/couzteau/SpellCheck" 
+       } 
+   ],
+   "repositories": [
+       {
+           "type": "git",
+           "url": "https://couzteau@github.com/couzteau/SpellCheck.git" 
+       } 
+   ]
+}
