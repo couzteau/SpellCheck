@@ -32,6 +32,9 @@ define(function (require, exports, module) {
     var CommandManager    = brackets.getModule("command/CommandManager");
     var Menus           = brackets.getModule("command/Menus");
     var StringUtils     = brackets.getModule("utils/StringUtils");
+    
+    var AtD       = require("AtD");
+
 
     var CHECK_SPELLING = "check_spelling";
 
@@ -45,7 +48,7 @@ define(function (require, exports, module) {
 
     var _check_spelling = function () {
         var s = _getActiveSelection();
-
+        console.log("hello");
         $(this).addClass("couzteauSpellCheck");
         //$(".couzteauSpellCheck").addProofreader({ edit_text_content: 'Edit Text', proofread_content: 'Proofread' );
         
