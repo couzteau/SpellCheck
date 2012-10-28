@@ -48,8 +48,7 @@ define(function (require, exports, module) {
 
     var _check_spelling = function () {
         var s = _getActiveSelection();
-        console.log("hello");
-        $(this).addClass("couzteauSpellCheck");
+ 
         //$(".couzteauSpellCheck").addProofreader({ edit_text_content: 'Edit Text', proofread_content: 'Proofread' );
         
     };
