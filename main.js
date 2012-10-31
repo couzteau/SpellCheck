@@ -60,10 +60,22 @@ define(function (require, exports, module) {
     var _check_spelling = function () {
         var s = _getActiveSelection();
         if (s !== undefined && s !== "") {
-            spellCheck.AtD.check(s, resultHandler);
+            
+            var editor = EditorManager.getCurrentFullEditor();
+            var cm = editor._codeMirror;
+            
+            var text = editor.document.getText();
+            var pos = text.indexOf(s);
+            console.log("pos is "+pos);
+            var cmPos = cm.posFromIndex(pos);
+            
+            cm.markText(cmPos, {line:cmPos.line, ch:cmPos.ch+s.length}, "AtD-spellcheck");
+                
+            // check current selection - the simple case
+            spellCheck.AtD.check("AtD-spellcheck", resultHandler);
         } else {
             var placeholder = 1;
-            // TODO 
+            // TODO check entire document
         }
     };
 

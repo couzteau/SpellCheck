@@ -70,7 +70,7 @@ define(function (require, exports, module) {
     
         AtD.callback_f = callback_f; /* remember the callback for later */
         AtD.remove(container_id);
-        var container = jQuery('#' + container_id);
+        var container = jQuery('.' + container_id);
     
         var html = container.html();
         text     = jQuery.trim(container.html());
@@ -121,14 +121,19 @@ define(function (require, exports, module) {
     };
     
     /* check a div for any incorrectly spelled words */
-    AtD.check = function(text, callback_f) {
+    AtD.check = function(container_id, callback_f) {
         /* checks if a global var for click stats exists and increments it if it does... */
         if (typeof AtD_proofread_click_count != "undefined")
             AtD_proofread_click_count++; 
     
         AtD.callback_f = callback_f; /* remember the callback for later */
     
-        
+        AtD.remove(container_id);	
+            
+        var container = jQuery('.' + container_id);
+    
+        var html = container.html();
+        var text     = jQuery.trim(container.html());
         text     = encodeURIComponent( text ); /* re-escaping % is not necessary here. don't do it */
     
         jQuery.ajax({
@@ -165,8 +170,8 @@ define(function (require, exports, module) {
                 }
     
                 /* on with the task of processing and highlighting errors */
-                console.log(xml +  " " + xml.t);
-                var count = AtD.processXML("dummyContainerId", xml);
+                AtD.container = container_id;
+                var count = AtD.processXML(container_id, xml);
                 
     
                 if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
