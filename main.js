@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
     // Brackets modules
     var EditorManager   = brackets.getModule("editor/EditorManager");
-    var CommandManager    = brackets.getModule("command/CommandManager");
+    var CommandManager  = brackets.getModule("command/CommandManager");
     var Menus           = brackets.getModule("command/Menus");
     var StringUtils     = brackets.getModule("utils/StringUtils");
     
@@ -49,22 +49,27 @@ define(function (require, exports, module) {
     };
     
     var resultHandler = [];
-    resultHandler.ready = function(count){
+    resultHandler.ready = function (count) {
         console.log("ready called: count " + count);
     };
     
-    resultHandler.success = function(count){
+    resultHandler.success = function (count) {
         console.log("success called: count " + count);
     };
 
     var _check_spelling = function () {
         var s = _getActiveSelection();
-        spellCheck.AtD.check(s, resultHandler);        
+        if (s !== undefined && s !== "") {
+            spellCheck.AtD.check(s, resultHandler);
+        } else {
+            var placeholder = 1;
+            // TODO 
+        }
     };
 
     var buildMenu = function (m) {
         m.addMenuDivider();
-        m.addMenuItem(CHECK_SPELLING);        
+        m.addMenuItem(CHECK_SPELLING);
     };
 
     CommandManager.register("Check Spelling", CHECK_SPELLING, _check_spelling);
