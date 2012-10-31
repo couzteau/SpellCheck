@@ -35,10 +35,10 @@ define(function (require, exports, module) {
 
     var AtD = 
     {
-        rpc : '', /* see the proxy.php that came with the AtD/TinyMCE plugin */
+        rpc : 'http://service.afterthedeadline.com', /* see the proxy.php that came with the AtD/TinyMCE plugin */
         rpc_css : 'http://www.polishmywriting.com/atd-jquery/server/proxycss.php?data=', /* you may use this, but be nice! */
         rpc_css_lang : 'en',
-        api_key : '',
+        api_key : 'bracketsSpellCheck',
         i18n : {},
         listener : {}
     };
@@ -107,7 +107,6 @@ define(function (require, exports, module) {
     
             /* highlight the errors */
     
-            AtD.container = container_id;
             var count = AtD.processXML(container_id, xml);
     
             if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
@@ -122,19 +121,14 @@ define(function (require, exports, module) {
     };
     
     /* check a div for any incorrectly spelled words */
-    AtD.check = function(container_id, callback_f) {
+    AtD.check = function(text, callback_f) {
         /* checks if a global var for click stats exists and increments it if it does... */
         if (typeof AtD_proofread_click_count != "undefined")
             AtD_proofread_click_count++; 
     
         AtD.callback_f = callback_f; /* remember the callback for later */
     
-        AtD.remove(container_id);	
-            
-        var container = jQuery('#' + container_id);
-    
-        var html = container.html();
-        text     = jQuery.trim(container.html());
+        
         text     = encodeURIComponent( text ); /* re-escaping % is not necessary here. don't do it */
     
         jQuery.ajax({
@@ -171,9 +165,9 @@ define(function (require, exports, module) {
                 }
     
                 /* on with the task of processing and highlighting errors */
-    
-                AtD.container = container_id;
-                var count = AtD.processXML(container_id, xml);
+                console.log(xml +  " " + xml.t);
+                var count = AtD.processXML("dummyContainerId", xml);
+                
     
                 if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
                     AtD.callback_f.ready(count);

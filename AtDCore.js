@@ -156,7 +156,6 @@ AtDCore.prototype._getSeparators = function() {
 };        
 
 AtDCore.prototype.processXML = function(responseXML) {
-
 	/* types of errors to ignore */
 	var types = {};
 

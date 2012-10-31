@@ -21,6 +21,8 @@
  *
  */
 
+/* Texxt wih typpoos. Its making sense, don't it? */
+
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -33,7 +35,7 @@ define(function (require, exports, module) {
     var Menus           = brackets.getModule("command/Menus");
     var StringUtils     = brackets.getModule("utils/StringUtils");
     
-    var AtD       = require("AtD");
+    var spellCheck       = require("AtD");
 
 
     var CHECK_SPELLING = "check_spelling";
@@ -45,12 +47,19 @@ define(function (require, exports, module) {
     var _replaceActiveSelection = function (text) {
         EditorManager.getFocusedEditor()._codeMirror.replaceSelection(text);
     };
+    
+    var resultHandler = [];
+    resultHandler.ready = function(count){
+        console.log("ready called: count " + count);
+    };
+    
+    resultHandler.success = function(count){
+        console.log("success called: count " + count);
+    };
 
     var _check_spelling = function () {
         var s = _getActiveSelection();
- 
-        //$(".couzteauSpellCheck").addProofreader({ edit_text_content: 'Edit Text', proofread_content: 'Proofread' );
-        
+        spellCheck.AtD.check(s, resultHandler);        
     };
 
     var buildMenu = function (m) {
