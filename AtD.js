@@ -71,69 +71,63 @@ define(function (require, exports, module) {
         AtD.callback_f = callback_f; /* remember the callback for later */
         AtD.remove(container_id);
         var container = jQuery('.' + container_id);
-    
-        var html = container.html();
-        text     = jQuery.trim(container.html());
-        text     = encodeURIComponent( text.replace( /\%/g, '%25' ) ); /* % not being escaped here creates problems, I don't know why. */
-    
-        /* do some sanity checks based on the browser */
-        if ((text.length > 2000 && navigator.appName == 'Microsoft Internet Explorer') || text.length > 7800) {
-            if (callback_f != undefined && callback_f.error != undefined)
-                callback_f.error("Maximum text length for this browser exceeded");
-    
-            return;
-        }
-    
-        /* do some cross-domain AJAX action with CSSHttpRequest */
-        CSSHttpRequest.get(AtD.rpc_css + text + "&lang=" + AtD.rpc_css_lang + "&nocache=" + (new Date().getTime()), function(response) {
-            /* do some magic to convert the response into an XML document */
-            var xml;
-            if (navigator.appName == 'Microsoft Internet Explorer') {
-                xml = new ActiveXObject("Microsoft.XMLDOM");
-                xml.async = false;
-                xml.loadXML(response);
-            } 
-            else {
-                xml = (new DOMParser()).parseFromString(response, 'text/xml');
-            }
-    
-            /* check for and display error messages from the server */
-            if (AtD.core.hasErrorMessage(xml)) {
-                if (AtD.callback_f != undefined && AtD.callback_f.error != undefined)
-                    AtD.callback_f.error(AtD.core.getErrorMessage(xml));
-    
+
+            var html = container.html();
+            text     = jQuery.trim(container.html());
+            text     = encodeURIComponent( text.replace( /\%/g, '%25' ) ); /* % not being escaped here creates problems, I don't know why. */
+        
+            /* do some sanity checks based on the browser */
+            if ((text.length > 2000 && navigator.appName == 'Microsoft Internet Explorer') || text.length > 7800) {
+                if (callback_f != undefined && callback_f.error != undefined)
+                    callback_f.error("Maximum text length for this browser exceeded");
+        
                 return;
-            } 
-    
-            /* highlight the errors */
-    
-            var count = AtD.processXML(container_id, xml);
-    
-            if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
-                AtD.callback_f.ready(count);
-    
-            if (count == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
-                AtD.callback_f.success(count);
-    
-            AtD.counter = count;
-            AtD.count   = count;
-        });
+            }
+        
+            /* do some cross-domain AJAX action with CSSHttpRequest */
+            CSSHttpRequest.get(AtD.rpc_css + text + "&lang=" + AtD.rpc_css_lang + "&nocache=" + (new Date().getTime()), function(response) {
+                /* do some magic to convert the response into an XML document */
+                var xml;
+                if (navigator.appName == 'Microsoft Internet Explorer') {
+                    xml = new ActiveXObject("Microsoft.XMLDOM");
+                    xml.async = false;
+                    xml.loadXML(response);
+                } 
+                else {
+                    xml = (new DOMParser()).parseFromString(response, 'text/xml');
+                }
+        
+                /* check for and display error messages from the server */
+                if (AtD.core.hasErrorMessage(xml)) {
+                    if (AtD.callback_f != undefined && AtD.callback_f.error != undefined)
+                        AtD.callback_f.error(AtD.core.getErrorMessage(xml));
+        
+                    return;
+                } 
+        
+                /* highlight the errors */
+        
+                var count = AtD.processXML(container_id, xml);
+        
+                if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
+                    AtD.callback_f.ready(count);
+        
+                if (count == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
+                    AtD.callback_f.success(count);
+        
+                AtD.counter = count;
+                AtD.count   = count;
+            });
     };
     
     /* check a div for any incorrectly spelled words */
-    AtD.check = function(container_id, callback_f) {
+    AtD.check = function(text, callback_f) {
         /* checks if a global var for click stats exists and increments it if it does... */
         if (typeof AtD_proofread_click_count != "undefined")
             AtD_proofread_click_count++; 
     
         AtD.callback_f = callback_f; /* remember the callback for later */
     
-        AtD.remove(container_id);	
-            
-        var container = jQuery('.' + container_id);
-    
-        var html = container.html();
-        var text     = jQuery.trim(container.html());
         text     = encodeURIComponent( text ); /* re-escaping % is not necessary here. don't do it */
     
         jQuery.ajax({
@@ -170,8 +164,7 @@ define(function (require, exports, module) {
                 }
     
                 /* on with the task of processing and highlighting errors */
-                AtD.container = container_id;
-                var count = AtD.processXML(container_id, xml);
+                var count = AtD.processXML(xml);
                 
     
                 if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
@@ -183,7 +176,7 @@ define(function (require, exports, module) {
                 AtD.counter = count;
                 AtD.count   = count;
             }
-        });
+        });               
     };
         
     AtD.remove = function(container_id) {
@@ -195,18 +188,35 @@ define(function (require, exports, module) {
             AtD.suggest(event.target);
     };
     
-    AtD.processXML = function(container_id, responseXML) {
+    AtD.processXML = function(responseXML) {
     
         var results = AtD.core.processXML(responseXML);
        
-        if (results.count > 0)
-            results.count = AtD.core.markMyWords(jQuery('#' + container_id).contents(), results.errors);
-    
-        jQuery('#' + container_id).unbind('click', AtD.clickListener);
-        jQuery('#' + container_id).click(AtD.clickListener);
+        if (results.count > 0){
+            //results.count = AtD.core.markMyWords(jQuery('#' + container_id).contents(), results.errors);
+            results.count = AtD.markMyWords(results.errors);
+        }
+
     
         return results.count;
     };
+    
+    AtD.markMyWords = function(erorrs){
+       // TODO
+        // 1. tokenize text to check, 
+        // 2. walk words in text to chek
+        // 3. highlight words. 
+        // 4. add class that enables suggestion drop down
+            
+//        console.log("word="+word);
+//        //where is it?
+//        var pos = text.indexOf(word);
+//        console.log("pos is "+pos);
+//        var cmPos = cm.posFromIndex(pos);
+//        cm.markText(cmPos, {line:cmPos.line, ch:cmPos.ch+word.length}, "underline");
+    
+    }
+    
     
     AtD.useSuggestion = function(word) {
         this.core.applySuggestion(AtD.errorElement, word);
