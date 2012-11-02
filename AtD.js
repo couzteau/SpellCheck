@@ -202,11 +202,16 @@ define(function (require, exports, module) {
     };
     
     AtD.markMyWords = function(erorrs){
+        
+        
        // TODO
         // 1. tokenize text to check, 
         // 2. walk words in text to chek
         // 3. highlight words. 
         // 4. add class that enables suggestion drop down
+        
+        
+        // see HTMLCodeHints / CodeHintManager
             
 //        console.log("word="+word);
 //        //where is it?
