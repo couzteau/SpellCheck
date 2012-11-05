@@ -164,14 +164,15 @@ define(function (require, exports, module) {
                 }
     
                 /* on with the task of processing and highlighting errors */
-                var count = AtD.processXML(xml);
+                var results = AtD.processXML(xml);
+                if (AtD.callback_f != undefined && AtD.callback_f.markMyWords != undefined)
+                    AtD.callback_f.markMyWords(results.errors);
                 
-    
                 if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
-                    AtD.callback_f.ready(count);
+                    AtD.callback_f.ready(results.count);
     
                 if (count == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
-                    AtD.callback_f.success(count);
+                    AtD.callback_f.success(results.count);
     
                 AtD.counter = count;
                 AtD.count   = count;
@@ -194,33 +195,14 @@ define(function (require, exports, module) {
        
         if (results.count > 0){
             //results.count = AtD.core.markMyWords(jQuery('#' + container_id).contents(), results.errors);
-            results.count = AtD.markMyWords(results.errors);
+            //results.count = AtD.markMyWords(results.errors);
         }
 
     
-        return results.count;
+        return results;
     };
     
-    AtD.markMyWords = function(erorrs){
-        
-        
-       // TODO
-        // 1. tokenize text to check, 
-        // 2. walk words in text to chek
-        // 3. highlight words. 
-        // 4. add class that enables suggestion drop down
-        
-        
-        // see HTMLCodeHints / CodeHintManager
-            
-//        console.log("word="+word);
-//        //where is it?
-//        var pos = text.indexOf(word);
-//        console.log("pos is "+pos);
-//        var cmPos = cm.posFromIndex(pos);
-//        cm.markText(cmPos, {line:cmPos.line, ch:cmPos.ch+word.length}, "underline");
-    
-    }
+
     
     
     AtD.useSuggestion = function(word) {

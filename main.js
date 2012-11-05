@@ -36,9 +36,11 @@ define(function (require, exports, module) {
     var StringUtils     = brackets.getModule("utils/StringUtils");
     
     var spellCheck       = require("AtD");
+    
 
 
     var CHECK_SPELLING = "check_spelling";
+    var activeSelection = "";
 
     var _getActiveSelection = function () {
         return EditorManager.getFocusedEditor().getSelectedText();
@@ -56,26 +58,50 @@ define(function (require, exports, module) {
     resultHandler.success = function (count) {
         console.log("success called: count " + count);
     };
+    
+    resultHandler.markMyWords = function (errors) {
+        
+        console.log("markMyWords called");
+        // 1. tokenize text to check, 
+        // 2. walk words in text to check
+        // 3. highlight words. 
+
+        // TODO
+        // 4. add class that enables suggestion drop down
+        // see HTMLCodeHints / CodeHintManager
+
+
+        var editor = EditorManager.getCurrentFullEditor();
+        var cm = editor._codeMirror;
+
+        var words = activeSelection.split(/\W/);
+        var text = editor.document.getText();
+
+        for (var i=0; i<words.length; i++) {            
+            var word = words[i];
+            if(word != undefined && word !== ""){           
+                console.log("word=" + word);
+                var pos = text.indexOf(word);
+                console.log("pos is " + pos);
+
+                var current  = errors['__' + word];
+                if (current != undefined && current.pretoks != undefined) {   
+                    var cmPos = cm.posFromIndex(pos);
+                    cm.markText(cmPos, {line:cmPos.line, ch:cmPos.ch+word.length}, "underline");
+                }
+            }
+        }
+
+    };
+    
 
     var _check_spelling = function () {
-        var s = _getActiveSelection();
-        if (s !== undefined && s !== "") {
-            
-//            var editor = EditorManager.getCurrentFullEditor();
-//            var cm = editor._codeMirror;
-//            
-//            var text = editor.document.getText();
-//            var pos = text.indexOf(s);
-//            console.log("pos is "+pos);
-//            var cmPos = cm.posFromIndex(pos);
-//            
-//            cm.markText(cmPos, {line:cmPos.line, ch:cmPos.ch+s.length}, "AtD-spellcheck");
-                
-            // check current selection - the simple case
-            spellCheck.AtD.check(s, resultHandler);
+        activeSelection = _getActiveSelection();
+        if (activeSelection !== undefined && activeSelection !== "") {
+            spellCheck.AtD.check(activeSelection, resultHandler);
         } else {
             var placeholder = 1;
-            // TODO check entire document
+            // TODO check entire document, really? TBD
         }
     };
 
