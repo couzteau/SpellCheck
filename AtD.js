@@ -63,62 +63,7 @@ define(function (require, exports, module) {
         AtD.core.showTypes(string);
     };
     
-    AtD.checkCrossAJAX = function(container_id, callback_f) {
-        /* checks if a global var for click stats exists and increments it if it does... */
-        if (typeof AtD_proofread_click_count != "undefined")  
-            AtD_proofread_click_count++; 
-    
-        AtD.callback_f = callback_f; /* remember the callback for later */
-        AtD.remove(container_id);
-        var container = jQuery('.' + container_id);
 
-            var html = container.html();
-            text     = jQuery.trim(container.html());
-            text     = encodeURIComponent( text.replace( /\%/g, '%25' ) ); /* % not being escaped here creates problems, I don't know why. */
-        
-            /* do some sanity checks based on the browser */
-            if ((text.length > 2000 && navigator.appName == 'Microsoft Internet Explorer') || text.length > 7800) {
-                if (callback_f != undefined && callback_f.error != undefined)
-                    callback_f.error("Maximum text length for this browser exceeded");
-        
-                return;
-            }
-        
-            /* do some cross-domain AJAX action with CSSHttpRequest */
-            CSSHttpRequest.get(AtD.rpc_css + text + "&lang=" + AtD.rpc_css_lang + "&nocache=" + (new Date().getTime()), function(response) {
-                /* do some magic to convert the response into an XML document */
-                var xml;
-                if (navigator.appName == 'Microsoft Internet Explorer') {
-                    xml = new ActiveXObject("Microsoft.XMLDOM");
-                    xml.async = false;
-                    xml.loadXML(response);
-                } 
-                else {
-                    xml = (new DOMParser()).parseFromString(response, 'text/xml');
-                }
-        
-                /* check for and display error messages from the server */
-                if (AtD.core.hasErrorMessage(xml)) {
-                    if (AtD.callback_f != undefined && AtD.callback_f.error != undefined)
-                        AtD.callback_f.error(AtD.core.getErrorMessage(xml));
-        
-                    return;
-                } 
-        
-                /* highlight the errors */
-        
-                var count = AtD.processXML(container_id, xml);
-        
-                if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
-                    AtD.callback_f.ready(count);
-        
-                if (count == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
-                    AtD.callback_f.success(count);
-        
-                AtD.counter = count;
-                AtD.count   = count;
-            });
-    };
     
     /* check a div for any incorrectly spelled words */
     AtD.check = function(text, callback_f) {
@@ -166,16 +111,16 @@ define(function (require, exports, module) {
                 /* on with the task of processing and highlighting errors */
                 var results = AtD.processXML(xml);
                 if (AtD.callback_f != undefined && AtD.callback_f.markMyWords != undefined)
-                    AtD.callback_f.markMyWords(results.errors);
+                    AtD.callback_f.markMyWords(results);
                 
                 if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
                     AtD.callback_f.ready(results.count);
     
-                if (count == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
+                if (results.count == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
                     AtD.callback_f.success(results.count);
     
-                AtD.counter = count;
-                AtD.count   = count;
+                AtD.counter = results.count;
+                AtD.count   = results.count;
             }
         });               
     };
