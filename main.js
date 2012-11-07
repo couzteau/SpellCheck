@@ -21,7 +21,7 @@
  *
  */
 
-/* texxt Iclude  wih typpos  makes  sense? teh is fro.  inluded? .  */
+/* texxt inlude  wih typos  makes  sense? teh is fro.  inluded? Tuesday. include A Barr */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -140,8 +140,8 @@ define(function (require, exports, module) {
 
                 var current  = atdResult.errors['__' + word];
                 if (current !== undefined && current.pretoks !== undefined) {
-                    console.log("marking word " + word);
-                    console.log("   at pos is " + pos);
+//                    console.log("marking word " + word);
+//                    console.log("   at pos is " + pos);
                     var cmPos = cm.posFromIndex(pos);
                     // highlight
                     cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
