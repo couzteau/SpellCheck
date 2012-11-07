@@ -21,7 +21,7 @@
  *
  */
 
-/* texxt wih typpos  makes  sense? teh is fzn fdsfdsf
+/* texxt wih typpos  makes  sense? teh is fzn fdsfdsf */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -32,6 +32,7 @@ define(function (require, exports, module) {
     // Brackets modules
     var CodeHintManager = brackets.getModule("editor/CodeHintManager"),
         EditorManager   = brackets.getModule("editor/EditorManager"),
+        ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),        
         CommandManager  = brackets.getModule("command/CommandManager"),
         Menus           = brackets.getModule("command/Menus"),
         StringUtils     = brackets.getModule("utils/StringUtils"),
@@ -198,8 +199,7 @@ define(function (require, exports, module) {
         token = cm.getRange(boundaries.start, boundaries.end);
         var query = {queryStr: token};
 
-        // TODO figure out how to create a query object to find hints for a 
-        // given word
+
         return query;
     };  
     
@@ -281,5 +281,16 @@ define(function (require, exports, module) {
 
     var spellingHints = new SpellingHints();
     CodeHintManager.registerHintProvider(spellingHints);
+    
+    /**
+     * init
+     */
+    function init() {
+        
+        ExtensionUtils.loadStyleSheet(module, "styles.css");
+
+    }
+    
+    init();
     
 });
