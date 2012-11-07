@@ -21,7 +21,7 @@
  *
  */
 
-/* texxt wih typpos  makes  sense? teh is fzn fdsfdsf */
+/* texxt Iclude  wih typpos  makes  sense? teh is fro.  inluded? .  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -58,6 +58,57 @@ define(function (require, exports, module) {
     var _replaceActiveSelection = function (text) {
         EditorManager.getFocusedEditor()._codeMirror.replaceSelection(text);
     };
+    
+    function findWordBoundariesForCursor(editor, cursor) {
+        // [\s$,\.\=\!-_#]
+        
+        // Try to use Editor.selectWordAt? - doesn't work as expected.
+        // var w = editor.selectWordAt(cursor);
+        var start = {line: -1, ch: -1},
+            end = {line: -1, ch: -1},
+            cm = editor._codeMirror,
+            token,
+            keepSearchingForWordStart = true,
+            keepSearchingForWordEnd = true,
+            prevToken,
+            match;
+
+        
+        end.line = start.line = cursor.line;
+        start.ch = cursor.ch;
+        end.ch = start.ch + 1;
+        token = cm.getRange(start, end);
+        
+        while (keepSearchingForWordStart) {
+            match = token.match(/[\s,\.\=\!-#\?%&\*]\w/);
+            if (match) {
+                start.ch = start.ch + 1;
+                keepSearchingForWordStart = false;
+            } else {
+                start.ch = start.ch - 1;
+            }
+            prevToken = token;
+            token = cm.getRange(start, end);
+            if (prevToken.valueOf() === token.valueOf()) {
+                keepSearchingForWordStart = false;
+            }
+        }
+        while (keepSearchingForWordEnd) {
+            match = token.match(/\w[\s,\.\=\!-#\?%&\*]/);
+            if (match) {
+                end.ch = end.ch - 1;
+                keepSearchingForWordEnd = false;
+            } else {
+                end.ch = end.ch + 1;
+            }
+            prevToken = token;
+            token = cm.getRange(start, end);
+            if (prevToken.valueOf() === token.valueOf()) {
+                keepSearchingForWordEnd = false;
+            }
+        }
+        return {start: start, end: end};
+    }
     
     // -----------------------------------------
     // AtD result handler
@@ -150,55 +201,6 @@ define(function (require, exports, module) {
      *
      */
     function SpellingHints() {}
-    
-    function findWordBoundariesForCursor(editor, cursor) {
-        // Try to use Editor.selectWordAt? - doesn't work as expected.
-        // var w = editor.selectWordAt(cursor);
-        var start = {line: -1, ch: -1},
-            end = {line: -1, ch: -1},
-            cm = editor._codeMirror,
-            token,
-            keepSearchingForWordStart = true,
-            keepSearchingForWordEnd = true,
-            prevToken,
-            match;
-
-        
-        end.line = start.line = cursor.line;
-        start.ch = cursor.ch;
-        end.ch = start.ch + 1;
-        token = cm.getRange(start, end);
-        
-        while (keepSearchingForWordStart) {
-            match = token.match(/[\s$,\.\=\!-_#]\S/);
-            if (match) {
-                start.ch = start.ch + 1;
-                keepSearchingForWordStart = false;
-            } else {
-                start.ch = start.ch - 1;
-            }
-            prevToken = token;
-            token = cm.getRange(start, end);
-            if (prevToken.valueOf() === token.valueOf()) {
-                keepSearchingForWordStart = false;
-            }
-        }
-        while (keepSearchingForWordEnd) {
-            match = token.match(/\S[\s$,\.\=\!-_#]/);
-            if (match) {
-                end.ch = end.ch - 1;
-                keepSearchingForWordEnd = false;
-            } else {
-                end.ch = end.ch + 1;
-            }
-            prevToken = token;
-            token = cm.getRange(start, end);
-            if (prevToken.valueOf() === token.valueOf()) {
-                keepSearchingForWordEnd = false;
-            }
-        }
-        return {start: start, end: end};
-    }
 
     /**
      * Get the spelling hints for a given word
@@ -268,8 +270,6 @@ define(function (require, exports, module) {
     };
 
     
-
-
     /**
      * Check whether to show hints on a specific key.
      * @param {string} key -- the character for the key user just presses.
@@ -282,13 +282,11 @@ define(function (require, exports, module) {
     var spellingHints = new SpellingHints();
     CodeHintManager.registerHintProvider(spellingHints);
     
-    /**
-     * init
-     */
+    // -----------------------------------------
+    // Init
+    // -----------------------------------------
     function init() {
-        
         ExtensionUtils.loadStyleSheet(module, "styles.css");
-
     }
     
     init();
