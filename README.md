@@ -7,7 +7,7 @@ Adobe Brackets:
 https://github.com/adobe/brackets
 
 ## Features
-* integrates the popular spell checker After The Deadline 
+* integrates the popular spell checker After The Deadline, http://afterthedeadline.com/
 
 ## Installation
 
