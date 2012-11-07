@@ -21,7 +21,7 @@
  *
  */
 
-/* texxt wih typpos  makes  semse? teh is fzn 
+/* texxt wih typpos  makes  semse? teh is fzn fdsfdsf
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -72,7 +72,6 @@ define(function (require, exports, module) {
     
     resultHandler.markMyWords = function (results) {
         atdResult = results;
-        var errors = results.errors;
         console.log("markMyWords called");
 
         editorForHinting = EditorManager.getCurrentFullEditor();
@@ -86,7 +85,7 @@ define(function (require, exports, module) {
             if(word != undefined && word !== ""){                    
                 var pos = text.indexOf(word);
 
-                var current  = errors['__' + word];
+                var current  = atdResult.errors['__' + word];
                 if (current != undefined && current.pretoks != undefined) {   
                     console.log("marking word " + word);
                     console.log("   at pos is " + pos);
@@ -173,10 +172,12 @@ define(function (require, exports, module) {
                 for (j = 0; j < suggestion.suggestions.length; j++) {
                     returnObject.push(suggestion.suggestions[j]);    
                 }
-            }
-            
+            }            
         }
-
+        var current  = atdResult.errors['__' + query.queryStr];
+        if(current !== undefined && current.pretoks && returnObject.length === 0){
+            returnObject.push("No suggestions available");
+        }
         return returnObject;
     };  
     
@@ -221,7 +222,7 @@ define(function (require, exports, module) {
         }
 
     };
-    // Try to use Editor.prototype.selectWordAt?
+    // Try to use Editor.selectWordAt?
     function findWordBoundariesForCursor(editor, cursor){
         var start = {line: -1, ch: -1},
             end = {line: -1, ch: -1},
