@@ -21,7 +21,7 @@
  *
  */
 
-/* Texxt wih typpos  makes  sene? thesdf B  
+/* texxt wih typpos  makes  semse? teh is fzn 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -43,6 +43,7 @@ define(function (require, exports, module) {
     var CHECK_SPELLING = "check_spelling";
     var activeSelection = "";
     var atdResult;
+    var editorForHinting;
     
 
     
@@ -73,27 +74,17 @@ define(function (require, exports, module) {
         atdResult = results;
         var errors = results.errors;
         console.log("markMyWords called");
-        // 1. tokenize text to check, 
-        // 2. walk words in text to check
-        // 3. highlight words. 
 
-        // TODO
-        // 4. add class that enables suggestion drop down
-        // see HTMLCodeHints / CodeHintManager
-
-
-        var editor = EditorManager.getCurrentFullEditor();
-        var cm = editor._codeMirror;
+        editorForHinting = EditorManager.getCurrentFullEditor();
+        var cm = editorForHinting._codeMirror;
         // tokenize
         var words = activeSelection.split(/\W/);
-        var text = editor.document.getText();
+        var text = editorForHinting.document.getText();
         // walk words / tokens
         for (var i=0; i<words.length; i++) {            
             var word = words[i];
-            if(word != undefined && word !== ""){    
-                
+            if(word != undefined && word !== ""){                    
                 var pos = text.indexOf(word);
-                
 
                 var current  = errors['__' + word];
                 if (current != undefined && current.pretoks != undefined) {   
@@ -102,22 +93,21 @@ define(function (require, exports, module) {
                     var cmPos = cm.posFromIndex(pos);
                     // highlight
                     cm.markText(cmPos, {line:cmPos.line, ch:cmPos.ch+word.length}, "underline AtD_hints_available");
-                    editor.setCursorPos(cmPos.line, cmPos.ch+word.length - 1);
+                    editorForHinting.setCursorPos(cmPos.line, cmPos.ch+word.length - 1);
                 }
-
-                // temp call - CodeHintManager.showHint should be called by an event.
-    // TODO: register event handler to show suggestions
-    // look at event.target for the marker span the user clicked, or you can call a CM API to find out what ch/line offset the event's cursor pos lies at
-    // [18:15] <@pflynn> yep.  I'm not sure what the best way is to map from the span back to the appropriate text offset, but there might be a CM API for that
-
-    
-                // immediately pop up the attribute value hint.
-                CodeHintManager.showHint(editor);                    
-
             }
         }
-        
-        
+
+
+        $(editorForHinting.getScrollerElement()).on('click', function (event) {
+                event.stopPropagation();
+                CodeHintManager.showHint(editorForHinting); 
+        });                
+            
+            
+    
+
+
     };
     
     // -----------------------------------------
@@ -156,26 +146,12 @@ define(function (require, exports, module) {
     /**
      * Registers as HintProvider as an object that is able to provide code hints. 
      * When the user requests a spelling
-     * hint getQueryInfo() will be called. getQueryInfo()examines
-     * the state of the editor and returns a search query object with a filter string if hints 
-     * can be provided. search() will then be called  to create a 
+     * hint getQueryInfo() will be called. getQueryInfo() returns a search query 
+     * object with a filter string if hints can be provided. 
+     * search() will then be called  to create a 
      * list of hints for the search query. When the user chooses a hint handleSelect() is called
      * so that the hint provider can insert the hint into the editor.
      *
-     * @param {Object.< getQueryInfo: function(editor, cursor),
-     *                  search: function(string),
-     *                  handleSelect: function(string, Editor, cursor, closeHints),
-     *                  shouldShowHintsOnKey: function(string)>}
-     *
-     * Parameter Details:
-     * - getQueryInfo - examines cursor location of editor and returns an object representing
-     *      the search query to be used for hinting. queryStr is a required property of the search object
-     *      and a client may provide other properties on the object to carry more context about the query.
-     * - search - takes a query object and returns an array of hint strings based on the queryStr property
-     *      of the query object.
-     * - handleSelect - takes a completion string and inserts it into the editor near the cursor
-     *      position
-     * - shouldShowHintsOnKey - inspects the char code and returns true if it wants to show code hints on that key.
      */
     function SpellingHints() {}
 
@@ -186,20 +162,15 @@ define(function (require, exports, module) {
      * @return {Array.<string>}
      */    
     SpellingHints.prototype.search = function (query) {
-//        var result = $.map(atdResult.suggestions, function (value, key) {
-//            // filter atdResult against word
-//            // create map, suggestions to word by using query.queryStr
-//        }).sort(); // TODO rank results
+
         var i,
             returnObject = [];
         for (i = 0; i < atdResult.suggestions.length; i++) {
             var suggestion = atdResult.suggestions[i];
-            debugger
             
             if(query.queryStr.match(suggestion.matcher)){
                 var j;
                 for (j = 0; j < suggestion.suggestions.length; j++) {
-                    debugger  
                     returnObject.push(suggestion.suggestions[j]);    
                 }
             }
@@ -220,7 +191,6 @@ define(function (require, exports, module) {
      *      Return null in queryStr to indicate NO hints can be provided.
      */
     SpellingHints.prototype.getQueryInfo = function (editor, cursor) {
-        
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
             token;
@@ -240,6 +210,7 @@ define(function (require, exports, module) {
      * @param {boolean} closeHints - true to close hints, or false to continue hinting
      */
     SpellingHints.prototype.handleSelect = function (completion, editor, cursor, closeHints) {
+        debugger
         var savedCursor= cursor;
         var boundaries= findWordBoundariesForCursor(editor, cursor);
 
@@ -250,7 +221,7 @@ define(function (require, exports, module) {
         }
 
     };
-    
+    // Try to use Editor.prototype.selectWordAt?
     function findWordBoundariesForCursor(editor, cursor){
         var start = {line: -1, ch: -1},
             end = {line: -1, ch: -1},
@@ -266,7 +237,7 @@ define(function (require, exports, module) {
         token = cm.getRange(start, end);
         
         while(keepSearchingForWordStart){
-            var match = token.match(/[\s$,\.\=\!]\S/);
+            var match = token.match(/[\s$,\.\=\!-_#]\S/);
             if(match){
                 start.ch = start.ch + 1;
                 keepSearchingForWordStart = false;                
@@ -280,7 +251,7 @@ define(function (require, exports, module) {
             }    
         }
         while(keepSearchingForWordEnd){
-            var match = token.match(/\S[\s$,\.\=\!]/);
+            var match = token.match(/\S[\s$,\.\=\!-_#]/);
             if(match){
                 end.ch = end.ch - 1;
                 keepSearchingForWordEnd = false;
@@ -295,6 +266,8 @@ define(function (require, exports, module) {
         }  
         return {start: start, end: end}
     }
+    
+
 
     /**
      * Check whether to show hints on a specific key.
