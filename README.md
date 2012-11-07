@@ -20,7 +20,7 @@ Select text and then select the command from the _Edit_ menu, or by right clicki
 ##Releases
 
 ### October 27, 2012
-0.1.0 Project draft
+0.5.0 - Spell checking is now functioning, project is barely out of the woods, still aplha quality
 
 Created by Jochen Hagenstroem  
 https://github.com/couzteau/SpellCheck  
