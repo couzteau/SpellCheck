@@ -222,8 +222,9 @@ define(function (require, exports, module) {
         }
 
     };
-    // Try to use Editor.selectWordAt?
     function findWordBoundariesForCursor(editor, cursor){
+        // Try to use Editor.selectWordAt? - doesn't work as expected.
+        // var w = editor.selectWordAt(cursor);
         var start = {line: -1, ch: -1},
             end = {line: -1, ch: -1},
             cm = editor._codeMirror,
