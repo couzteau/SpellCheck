@@ -32,11 +32,11 @@ define(function (require, exports, module) {
     // Brackets modules
     var CodeHintManager = brackets.getModule("editor/CodeHintManager"),
         EditorManager   = brackets.getModule("editor/EditorManager"),
-        ExtensionUtils          = brackets.getModule("utils/ExtensionUtils"),        
+        ExtensionUtils  = brackets.getModule("utils/ExtensionUtils"),
         CommandManager  = brackets.getModule("command/CommandManager"),
         Menus           = brackets.getModule("command/Menus"),
         StringUtils     = brackets.getModule("utils/StringUtils"),
-        TokenUtils      = brackets.getModule("utils/TokenUtils"),        
+        TokenUtils      = brackets.getModule("utils/TokenUtils"),
         spellCheck      = require("AtD");
     
 
@@ -81,33 +81,29 @@ define(function (require, exports, module) {
         var words = activeSelection.split(/\W/);
         var text = editorForHinting.document.getText();
         // walk words / tokens
-        for (var i=0; i<words.length; i++) {            
+        var i;
+        for (i = 0; i < words.length; i++) {
             var word = words[i];
-            if(word != undefined && word !== ""){                    
+            if (word !== undefined && word !== "") {
                 var pos = text.indexOf(word);
 
                 var current  = atdResult.errors['__' + word];
-                if (current != undefined && current.pretoks != undefined) {   
+                if (current !== undefined && current.pretoks !== undefined) {
                     console.log("marking word " + word);
                     console.log("   at pos is " + pos);
                     var cmPos = cm.posFromIndex(pos);
                     // highlight
-                    cm.markText(cmPos, {line:cmPos.line, ch:cmPos.ch+word.length}, "underline AtD_hints_available");
-                    editorForHinting.setCursorPos(cmPos.line, cmPos.ch+word.length - 1);
+                    cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
+                    editorForHinting.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
                 }
             }
         }
 
 
         $(editorForHinting.getScrollerElement()).on('click', function (event) {
-                event.stopPropagation();
-                CodeHintManager.showHint(editorForHinting); 
-        });                
-            
-            
-    
-
-
+            event.stopPropagation();
+            CodeHintManager.showHint(editorForHinting);
+        });
     };
     
     // -----------------------------------------
@@ -154,13 +150,62 @@ define(function (require, exports, module) {
      *
      */
     function SpellingHints() {}
+    
+    function findWordBoundariesForCursor(editor, cursor) {
+        // Try to use Editor.selectWordAt? - doesn't work as expected.
+        // var w = editor.selectWordAt(cursor);
+        var start = {line: -1, ch: -1},
+            end = {line: -1, ch: -1},
+            cm = editor._codeMirror,
+            token,
+            keepSearchingForWordStart = true,
+            keepSearchingForWordEnd = true,
+            prevToken,
+            match;
+
+        
+        end.line = start.line = cursor.line;
+        start.ch = cursor.ch;
+        end.ch = start.ch + 1;
+        token = cm.getRange(start, end);
+        
+        while (keepSearchingForWordStart) {
+            match = token.match(/[\s$,\.\=\!-_#]\S/);
+            if (match) {
+                start.ch = start.ch + 1;
+                keepSearchingForWordStart = false;
+            } else {
+                start.ch = start.ch - 1;
+            }
+            prevToken = token;
+            token = cm.getRange(start, end);
+            if (prevToken.valueOf() === token.valueOf()) {
+                keepSearchingForWordStart = false;
+            }
+        }
+        while (keepSearchingForWordEnd) {
+            match = token.match(/\S[\s$,\.\=\!-_#]/);
+            if (match) {
+                end.ch = end.ch - 1;
+                keepSearchingForWordEnd = false;
+            } else {
+                end.ch = end.ch + 1;
+            }
+            prevToken = token;
+            token = cm.getRange(start, end);
+            if (prevToken.valueOf() === token.valueOf()) {
+                keepSearchingForWordEnd = false;
+            }
+        }
+        return {start: start, end: end};
+    }
 
     /**
      * Get the spelling hints for a given word
      * @param {Object.<queryStr: string, ...} query -- a query object with a required property queryStr 
      *     that will be used to filter out code hints
      * @return {Array.<string>}
-     */    
+     */
     SpellingHints.prototype.search = function (query) {
 
         var i,
@@ -168,19 +213,19 @@ define(function (require, exports, module) {
         for (i = 0; i < atdResult.suggestions.length; i++) {
             var suggestion = atdResult.suggestions[i];
             
-            if(query.queryStr.match(suggestion.matcher)){
+            if (query.queryStr.match(suggestion.matcher)) {
                 var j;
                 for (j = 0; j < suggestion.suggestions.length; j++) {
-                    returnObject.push(suggestion.suggestions[j]);    
+                    returnObject.push(suggestion.suggestions[j]);
                 }
-            }            
+            }
         }
         var current  = atdResult.errors['__' + query.queryStr];
-        if(current !== undefined && current.pretoks && returnObject.length === 0){
+        if (current !== undefined && current.pretoks && returnObject.length === 0) {
             returnObject.push("No suggestions available");
         }
         return returnObject;
-    };  
+    };
     
     /**
      * Figures out the text to use for the hint list query based on the text
@@ -201,7 +246,7 @@ define(function (require, exports, module) {
 
 
         return query;
-    };  
+    };
     
     /**
      * Enters the code completion text into the editor
@@ -211,8 +256,8 @@ define(function (require, exports, module) {
      * @param {boolean} closeHints - true to close hints, or false to continue hinting
      */
     SpellingHints.prototype.handleSelect = function (completion, editor, cursor, closeHints) {
-        var savedCursor= cursor;
-        var boundaries= findWordBoundariesForCursor(editor, cursor);
+        var savedCursor = cursor;
+        var boundaries = findWordBoundariesForCursor(editor, cursor);
 
         if (boundaries.start.ch !== boundaries.end.ch) {
             editor.document.replaceRange(completion, boundaries.start, boundaries.end);
@@ -221,52 +266,7 @@ define(function (require, exports, module) {
         }
 
     };
-    function findWordBoundariesForCursor(editor, cursor){
-        // Try to use Editor.selectWordAt? - doesn't work as expected.
-        // var w = editor.selectWordAt(cursor);
-        var start = {line: -1, ch: -1},
-            end = {line: -1, ch: -1},
-            cm = editor._codeMirror,
-            token, keepSearchingForWordStart = true,
-            keepSearchingForWordEnd = true,
-            prevToken;
 
-        
-        end.line = start.line = cursor.line;
-        start.ch = cursor.ch; 
-        end.ch = start.ch + 1;
-        token = cm.getRange(start, end);
-        
-        while(keepSearchingForWordStart){
-            var match = token.match(/[\s$,\.\=\!-_#]\S/);
-            if(match){
-                start.ch = start.ch + 1;
-                keepSearchingForWordStart = false;                
-            }else{
-                start.ch = start.ch - 1;
-            }
-            prevToken = token;
-            token = cm.getRange(start, end);
-            if(prevToken.valueOf() === token.valueOf()){
-                keepSearchingForWordStart = false;  
-            }    
-        }
-        while(keepSearchingForWordEnd){
-            var match = token.match(/\S[\s$,\.\=\!-_#]/);
-            if(match){
-                end.ch = end.ch - 1;
-                keepSearchingForWordEnd = false;
-            }else{
-                end.ch = end.ch + 1;
-            }
-            prevToken = token;
-            token = cm.getRange(start, end);   
-            if(prevToken.valueOf() === token.valueOf()){
-                keepSearchingForWordEnd = false; 
-            }
-        }  
-        return {start: start, end: end}
-    }
     
 
 
@@ -277,7 +277,7 @@ define(function (require, exports, module) {
      */
     SpellingHints.prototype.shouldShowHintsOnKey = function (key) {
         return false;
-    };    
+    };
 
     var spellingHints = new SpellingHints();
     CodeHintManager.registerHintProvider(spellingHints);
