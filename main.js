@@ -21,7 +21,7 @@
  *
  */
 
-/* texxt wih typpos  makes  semse? teh is fzn fdsfdsf
+/* texxt wih typpos  makes  sense? teh is fzn fdsfdsf
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -211,7 +211,6 @@ define(function (require, exports, module) {
      * @param {boolean} closeHints - true to close hints, or false to continue hinting
      */
     SpellingHints.prototype.handleSelect = function (completion, editor, cursor, closeHints) {
-        debugger
         var savedCursor= cursor;
         var boundaries= findWordBoundariesForCursor(editor, cursor);
 
