@@ -33,205 +33,192 @@ define(function (require, exports, module) {
  */
     var atDCore       = require("AtDCore");
 
-    var AtD = 
-    {
-        rpc : 'http://service.afterthedeadline.com', /* see the proxy.php that came with the AtD/TinyMCE plugin */
-        rpc_css : 'http://www.polishmywriting.com/atd-jquery/server/proxycss.php?data=', /* you may use this, but be nice! */
-        rpc_css_lang : 'en',
-        api_key : 'bracketsSpellCheck',
-        i18n : {},
-        listener : {}
-    };
+    var AtD =
+        {
+            rpc : 'http://service.afterthedeadline.com', /* see the proxy.php that came with the AtD/TinyMCE plugin */
+            rpc_css : 'http://www.polishmywriting.com/atd-jquery/server/proxycss.php?data=', /* you may use this, but be nice! */
+            rpc_css_lang : 'en',
+            api_key : 'bracketsSpellCheck',
+            i18n : {},
+            listener : {}
+        };
     
-    AtD.getLang = function(key, defaultk) {
-        if (AtD.i18n[key] == undefined)
+    AtD.getLang = function (key, defaultk) {
+        if (AtD.i18n[key] === undefined) {
             return defaultk;
-    
+        }
         return AtD.i18n[key];
     };
     
-    AtD.addI18n = function(localizations) {
+    AtD.addI18n = function (localizations) {
         AtD.i18n = localizations;
         AtD.core.addI18n(localizations);
     };
     
-    AtD.setIgnoreStrings = function(string) {
+    AtD.setIgnoreStrings = function (string) {
         AtD.core.setIgnoreStrings(string);
     };
     
-    AtD.showTypes = function(string) {
+    AtD.showTypes = function (string) {
         AtD.core.showTypes(string);
     };
     
 
     
     /* check a div for any incorrectly spelled words */
-    AtD.check = function(text, callback_f) {
+    AtD.check = function (text, callback_f) {
         /* checks if a global var for click stats exists and increments it if it does... */
-        if (typeof AtD_proofread_click_count != "undefined")
-            AtD_proofread_click_count++; 
+//        if (typeof AtD_proofread_click_count !== "undefined") {
+//            AtD_proofread_click_count = AtD_proofread_click_count + 1;
+//        }
     
         AtD.callback_f = callback_f; /* remember the callback for later */
     
-        text     = encodeURIComponent( text ); /* re-escaping % is not necessary here. don't do it */
+        text     = encodeURIComponent(text); /* re-escaping % is not necessary here. don't do it */
     
-        jQuery.ajax({
+        $.ajax({
             type : "POST",
             url : AtD.rpc + '/checkDocument',
             data : 'key=' + AtD.api_key + '&data=' + text,
-            format : 'raw', 
-            dataType : (jQuery.browser.msie) ? "text" : "xml",
+            format : 'raw',
+            dataType : ($.browser.msie) ? "text" : "xml",
     
-            error : function(XHR, status, error) {
-                if (AtD.callback_f != undefined && AtD.callback_f.error != undefined)
+            error : function (XHR, status, error) {
+                if (AtD.callback_f !== undefined && AtD.callback_f.error !== undefined) {
                     AtD.callback_f.error(status + ": " + error);
+                }
             },
         
-            success : function(data) {
+            success : function (data) {
                 /* apparently IE likes to return XML as plain text-- work around from:
                    http://docs.jquery.com/Specifying_the_Data_Type_for_AJAX_Requests */
     
                 var xml;
-                if (typeof data == "string") {
+                if (typeof data === "string") {
                     xml = new ActiveXObject("Microsoft.XMLDOM");
                     xml.async = false;
                     xml.loadXML(data);
-                } 
-                else {
+                } else {
                     xml = data;
                 }
     
                 if (AtD.core.hasErrorMessage(xml)) {
-                    if (AtD.callback_f != undefined && AtD.callback_f.error != undefined)
+                    if (AtD.callback_f !== undefined && AtD.callback_f.error !== undefined) {
                         AtD.callback_f.error(AtD.core.getErrorMessage(xml));
-    
+                    }
                     return;
                 }
     
                 /* on with the task of processing and highlighting errors */
-                var results = AtD.processXML(xml);
-                if (AtD.callback_f != undefined && AtD.callback_f.markMyWords != undefined)
+                var results = AtD.core.processXML(xml);
+                if (AtD.callback_f !== undefined && AtD.callback_f.markMyWords !== undefined) {
                     AtD.callback_f.markMyWords(results);
-                
-                if (AtD.callback_f != undefined && AtD.callback_f.ready != undefined)
+                }
+                if (AtD.callback_f !== undefined && AtD.callback_f.ready !== undefined) {
                     AtD.callback_f.ready(results.count);
-    
-                if (results.count == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
+                }
+                if (results.count === 0 && AtD.callback_f !== undefined && AtD.callback_f.success !== undefined) {
                     AtD.callback_f.success(results.count);
-    
+                }
                 AtD.counter = results.count;
                 AtD.count   = results.count;
             }
-        });               
+        });
     };
         
-    AtD.remove = function(container_id) {
+    AtD.remove = function (container_id) {
         AtD._removeWords(container_id, null);
     };
     
-    AtD.clickListener = function(event) {
-        if (AtD.core.isMarkedNode(event.target))
+    AtD.clickListener = function (event) {
+        if (AtD.core.isMarkedNode(event.target)) {
             AtD.suggest(event.target);
-    };
-    
-    AtD.processXML = function(responseXML) {
-    
-        var results = AtD.core.processXML(responseXML);
-       
-        if (results.count > 0){
-            //results.count = AtD.core.markMyWords(jQuery('#' + container_id).contents(), results.errors);
-            //results.count = AtD.markMyWords(results.errors);
         }
-
-    
-        return results;
     };
-    
 
-    
-    
-    AtD.useSuggestion = function(word) {
+    AtD.useSuggestion = function (word) {
         this.core.applySuggestion(AtD.errorElement, word);
     
-        AtD.counter --;
-        if (AtD.counter == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
+        AtD.counter--;
+        if (AtD.counter === 0 && AtD.callback_f !== undefined && AtD.callback_f.success !== undefined) {
             AtD.callback_f.success(AtD.count);
-    };
-    
-    AtD.editSelection = function() {
-        var parent = AtD.errorElement.parent();
-    
-        if (AtD.callback_f != undefined && AtD.callback_f.editSelection != undefined)
-            AtD.callback_f.editSelection(AtD.errorElement);
-    
-        if (AtD.errorElement.parent() != parent) {
-            AtD.counter --;
-            if (AtD.counter == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
-                AtD.callback_f.success(AtD.count);
         }
     };
     
-    AtD.ignoreSuggestion = function() {
-        AtD.core.removeParent(AtD.errorElement); 
+    AtD.editSelection = function () {
+        var parent = AtD.errorElement.parent();
     
-        AtD.counter --;
-        if (AtD.counter == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
-            AtD.callback_f.success(AtD.count);
+        if (AtD.callback_f !== undefined && AtD.callback_f.editSelection !== undefined) {
+            AtD.callback_f.editSelection(AtD.errorElement);
+        }
+    
+        if (AtD.errorElement.parent() !== parent) {
+            AtD.counter--;
+            if (AtD.counter === 0 && AtD.callback_f !== undefined && AtD.callback_f.success !== undefined) {
+                AtD.callback_f.success(AtD.count);
+            }
+        }
     };
     
-    AtD.ignoreAll = function(container_id) {
+    AtD.ignoreSuggestion = function () {
+        AtD.core.removeParent(AtD.errorElement);
+    
+        AtD.counter--;
+        if (AtD.counter === 0 && AtD.callback_f !== undefined && AtD.callback_f.success !== undefined) {
+            AtD.callback_f.success(AtD.count);
+        }
+    };
+    
+    AtD.ignoreAll = function (container_id) {
         var target = AtD.errorElement.text();
         var removed = AtD._removeWords(container_id, target);
     
         AtD.counter -= removed;
     
-        if (AtD.counter == 0 && AtD.callback_f != undefined && AtD.callback_f.success != undefined)
+        if (AtD.counter === 0 && AtD.callback_f !== undefined && AtD.callback_f.success !== undefined) {
             AtD.callback_f.success(AtD.count);
+        }
     
-        if (AtD.callback_f != undefined && AtD.callback_f.ignore != undefined) {
+        if (AtD.callback_f !== undefined && AtD.callback_f.ignore !== undefined) {
             AtD.callback_f.ignore(target);
             AtD.core.setIgnoreStrings(target);
         }
     };
     
-    AtD.explainError = function() {
-        if (AtD.callback_f != undefined && AtD.callback_f.explain != undefined)
+    AtD.explainError = function () {
+        if (AtD.callback_f !== undefined && AtD.callback_f.explain !== undefined) {
             AtD.callback_f.explain(AtD.explainURL);
+        }
     };
     
-    AtD.suggest = function(element) {
+    AtD.suggest = function (element) {
         /* construct the menu if it doesn't already exist */
-    
-        if (jQuery('#suggestmenu').length == 0) {
-            var suggest = jQuery('<div id="suggestmenu"></div>');
+        var suggest;
+        if ($('#suggestmenu').length === 0) {
+            suggest = $('<div id="suggestmenu"></div>');
             suggest.prependTo('body');
-        }
-        else {
-            var suggest = jQuery('#suggestmenu');
+        } else {
+            suggest = $('#suggestmenu');
             suggest.hide();
         }
     
-        /* find the correct suggestions object */          
-    
-        errorDescription = AtD.core.findSuggestion(element);
+        /* find the correct suggestions object */
+        var errorDescription = AtD.core.findSuggestion(element);
     
         /* build up the menu y0 */
-    
-        AtD.errorElement = jQuery(element);
+        AtD.errorElement = $(element);
     
         suggest.empty();
     
-        if (errorDescription == undefined) {
+        if (errorDescription === undefined) {
             suggest.append('<strong>' + AtD.getLang('menu_title_no_suggestions', 'No suggestions') + '</strong>');
-        }
-        else if (errorDescription["suggestions"].length == 0) {
+        } else if (errorDescription["suggestions"].length === 0) {
             suggest.append('<strong>' + errorDescription['description'] + '</strong>');
-        }
-        else {
+        } else {
             suggest.append('<strong>' + errorDescription['description'] + '</strong>');
-    
-            for (var i = 0; i < errorDescription["suggestions"].length; i++) {
-                (function(sugg) {
+            var i;
+            for (i = 0; i < errorDescription["suggestions"].length; i++) {
+                (function (sugg) {
                     suggest.append('<a href="javascript:AtD.useSuggestion(\'' + sugg.replace(/'/, '\\\'') + '\')">' + sugg + '</a>');
                 })(errorDescription["suggestions"][i]);
             }
@@ -239,7 +226,7 @@ define(function (require, exports, module) {
     
         /* do the explain menu if configured */
     
-        if (AtD.callback_f != undefined && AtD.callback_f.explain != undefined && errorDescription['moreinfo'] != undefined) {
+        if (AtD.callback_f !== undefined && AtD.callback_f.explain !== undefined && errorDescription['moreinfo'] !== undefined) {
             suggest.append('<a href="javascript:AtD.explainError()" class="spell_sep_top">' + AtD.getLang('menu_option_explain', 'Explain...') + '</a>');
             AtD.explainURL = errorDescription['moreinfo'];
         }
@@ -250,91 +237,93 @@ define(function (require, exports, module) {
     
         /* add the edit in place and ignore always option */
     
-        if (AtD.callback_f != undefined && AtD.callback_f.editSelection != undefined) {
-            if (AtD.callback_f != undefined && AtD.callback_f.ignore != undefined)
+        if (AtD.callback_f !== undefined && AtD.callback_f.editSelection !== undefined) {
+            if (AtD.callback_f !== undefined && AtD.callback_f.ignore !== undefined) {
                 suggest.append('<a href="javascript:AtD.ignoreAll(\'' + AtD.container + '\')">' + AtD.getLang('menu_option_ignore_always', 'Ignore always') + '</a>');
-            else
+            } else {
                 suggest.append('<a href="javascript:AtD.ignoreAll(\'' + AtD.container + '\')">' + AtD.getLang('menu_option_ignore_all', 'Ignore all') + '</a>');
-     
+            }
             suggest.append('<a href="javascript:AtD.editSelection(\'' + AtD.container + '\')" class="spell_sep_bottom spell_sep_top">' + AtD.getLang('menu_option_edit_selection', 'Edit Selection...') + '</a>');
-        }
-        else {
-            if (AtD.callback_f != undefined && AtD.callback_f.ignore != undefined)
+        } else {
+            if (AtD.callback_f !== undefined && AtD.callback_f.ignore !== undefined) {
                 suggest.append('<a href="javascript:AtD.ignoreAll(\'' + AtD.container + '\')" class="spell_sep_bottom">' + AtD.getLang('menu_option_ignore_always', 'Ignore always') + '</a>');
-            else
+            } else {
                 suggest.append('<a href="javascript:AtD.ignoreAll(\'' + AtD.container + '\')" class="spell_sep_bottom">' + AtD.getLang('menu_option_ignore_all', 'Ignore all') + '</a>');
+            }
         }
     
         /* show the menu */
     
-        var pos = jQuery(element).offset();
-        var width = jQuery(element).width();
-        jQuery(suggest).css({ left: (pos.left + width) + 'px', top: pos.top + 'px' });
+        var pos = $(element).offset();
+        var width = $(element).width();
+        $(suggest).css({ left: (pos.left + width) + 'px', top: pos.top + 'px' });
     
-        jQuery(suggest).fadeIn(200);
+        $(suggest).fadeIn(200);
     
         /* bind events to make the menu disappear when the user clicks outside of it */
     
         AtD.suggestShow = true;
     
-        setTimeout(function() {
-            jQuery("body").bind("click", function() {
-                if (!AtD.suggestShow)
-                    jQuery('#suggestmenu').fadeOut(200);      
+        setTimeout(function () {
+            $("body").bind("click", function () {
+                if (!AtD.suggestShow) {
+                    $('#suggestmenu').fadeOut(200);
+                }
             });
         }, 1);
     
-        setTimeout(function() {
+        setTimeout(function () {
             AtD.suggestShow = false;
-        }, 2); 
+        }, 2);
     };
     
-    AtD._removeWords = function(container_id, w) {
-        return this.core.removeWords(jQuery('#' + container_id), w);
+    AtD._removeWords = function (container_id, w) {
+        return this.core.removeWords($('#' + container_id), w);
     };
     
     /*
      * Set prototypes used by AtD Core UI 
      */
-    AtD.initCoreModule = function() {
+    AtD.initCoreModule = function () {
         var core = new AtDCore();
     
-        core.hasClass = function(node, className) {
-            return jQuery(node).hasClass(className);
+        core.hasClass = function (node, className) {
+            return $(node).hasClass(className);
         };
     
-        core.map = jQuery.map;
+        core.map = $.map;
     
-        core.contents = function(node) {
-            return jQuery(node).contents();
+        core.contents = function (node) {
+            return $(node).contents();
         };
     
-        core.replaceWith = function(old_node, new_node) {
-            return jQuery(old_node).replaceWith(new_node);
+        core.replaceWith = function (old_node, new_node) {
+            return $(old_node).replaceWith(new_node);
         };
     
-        core.findSpans = function(parent) {
-                return jQuery.makeArray(parent.find('span'));
+        core.findSpans = function (parent) {
+            return $.makeArray(parent.find('span'));
         };
     
-        core.create = function(node_html, isTextNode) {
-            return jQuery('<span class="mceItemHidden">' + node_html + '</span>');
+        core.create = function (node_html, isTextNode) {
+            return $('<span class="mceItemHidden">' + node_html + '</span>');
         };
     
-        core.remove = function(node) {
-            return jQuery(node).remove();
+        core.remove = function (node) {
+            return $(node).remove();
         };
     
-        core.removeParent = function(node) {
+        core.removeParent = function (node) {
             /* unwrap exists in jQuery 1.4+ only. Thankfully because replaceWith as-used here won't work in 1.4 */
-            if (jQuery(node).unwrap)
-                return jQuery(node).contents().unwrap();
-            else
-                return jQuery(node).replaceWith(jQuery(node).html());
+            if ($(node).unwrap) {
+                return $(node).contents().unwrap();
+            } else {
+                return $(node).replaceWith($(node).html());
+            }
         };
     
-        core.getAttrib = function(node, name) {
-            return jQuery(node).attr(name);
+        core.getAttrib = function (node, name) {
+            return $(node).attr(name);
         };
     
         return core;
