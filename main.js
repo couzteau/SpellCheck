@@ -21,7 +21,7 @@
  *
  */
 
-/* texxt inlude  wih typos  makes  sense? teh is fro.  inluded? Tuesday. include A Barr */
+/* texxt inlude  wih typos  makes  sense? tea is fro.  inluded? Tuesday. include A Barr */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -155,8 +155,13 @@ define(function (require, exports, module) {
 //                    console.log("   at pos is " + pos);
                     var cmPos = cm.posFromIndex(pos);
                     // highlight
-                    cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
-                    targetEditor.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
+                    var boundaries = findWordBoundariesForCursor(targetEditor, cmPos);
+                    var token = cm.getRange(boundaries.start, boundaries.end);
+                    if (token === word) {
+                        cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
+                        targetEditor.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
+                    }
+
                 }
             }
         }
@@ -263,7 +268,6 @@ define(function (require, exports, module) {
             token;
         
         token = cm.getRange(boundaries.start, boundaries.end);
-        var x = cm.getTokenAt(cursor);
         // TODO only return query if word at cursor has class AtD_hints_available
         // else make placebo query
         var query = {queryStr: token};
