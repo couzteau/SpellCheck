@@ -155,6 +155,7 @@ define(function (require, exports, module) {
 //                    console.log("   at pos is " + pos);
                     var cmPos = cm.posFromIndex(pos);
                     // highlight
+                    // TODO find boundaries should use the suggestion.matcher
                     var boundaries = findWordBoundariesForCursor(targetEditor, cmPos);
                     var token = cm.getRange(boundaries.start, boundaries.end);
                     if (token === word) {
@@ -237,7 +238,7 @@ define(function (require, exports, module) {
                     suggestion.string.indexOf(query.queryStr) !== -1) {
                 var j;
                 for (j = 0; j < suggestion.suggestions.length; j++) {
-                    // TODO check if suggestion is available already
+                    // check if suggestion is available already
                     if (!suggestionsAdded[suggestion.suggestions[j]]) {
                         returnObject.push(suggestion.suggestions[j]);
                     }
