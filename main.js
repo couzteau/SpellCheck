@@ -80,7 +80,7 @@ define(function (require, exports, module) {
         token = cm.getRange(start, end);
         
         while (keepSearchingForWordStart) {
-            match = token.match(/[\s,\.\=\!-#\?%&\*]\w/);
+            match = token.match(/[\s,\.\=\!#\?\-%&\*]\w/);
             if (match) {
                 start.ch = start.ch + 1;
                 keepSearchingForWordStart = false;
@@ -94,7 +94,7 @@ define(function (require, exports, module) {
             }
         }
         while (keepSearchingForWordEnd) {
-            match = token.match(/\w[\s,\.\=\!-#\?%&\*]/);
+            match = token.match(/\w[\s,\.\=\!#\?\-%&\*]/);
             if (match) {
                 end.ch = end.ch - 1;
                 keepSearchingForWordEnd = false;
@@ -233,7 +233,8 @@ define(function (require, exports, module) {
         for (i = 0; i < atdResult.suggestions.length; i++) {
             var suggestion = atdResult.suggestions[i];
             
-            if (query.queryStr.match(suggestion.matcher)) {
+            if (query.queryStr.match(suggestion.matcher) ||
+                    suggestion.string.indexOf(query.queryStr) !== -1) {
                 var j;
                 for (j = 0; j < suggestion.suggestions.length; j++) {
                     // TODO check if suggestion is available already
