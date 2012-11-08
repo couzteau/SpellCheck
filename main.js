@@ -44,7 +44,7 @@ define(function (require, exports, module) {
     var CHECK_SPELLING = "check_spelling";
     var activeSelection = "";
     var atdResult;
-    var editorForHinting;
+    var TargetEditor;
     
 
     
@@ -126,11 +126,10 @@ define(function (require, exports, module) {
         atdResult = results;
         //console.log("markMyWords called");
 
-        editorForHinting = EditorManager.getCurrentFullEditor();
-        var cm = editorForHinting._codeMirror;
+        var cm = TargetEditor._codeMirror;
         // tokenize
         var words = activeSelection.split(/\W/);
-        var text = editorForHinting.document.getText();
+        var text = TargetEditor.document.getText();
         // walk words / tokens
         var i;
         var wordCursor = [];
@@ -151,16 +150,10 @@ define(function (require, exports, module) {
                     var cmPos = cm.posFromIndex(pos);
                     // highlight
                     cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
-                    editorForHinting.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
+                    TargetEditor.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
                 }
             }
         }
-
-
-        $(editorForHinting.getScrollerElement()).on('click', function (event) {
-            event.stopPropagation();
-            CodeHintManager.showHint(editorForHinting);
-        });
     };
     
     // -----------------------------------------
@@ -296,14 +289,20 @@ define(function (require, exports, module) {
         return false;
     };
 
-    var spellingHints = new SpellingHints();
-    CodeHintManager.registerHintProvider(spellingHints);
+
     
     // -----------------------------------------
     // Init
     // -----------------------------------------
     function init() {
+        debugger
         ExtensionUtils.loadStyleSheet(module, "styles.css");
+        CodeHintManager.registerHintProvider(new SpellingHints());
+        TargetEditor = EditorManager.getCurrentFullEditor();
+        $(TargetEditor.getScrollerElement()).on('click', function (event) {
+            event.stopPropagation();
+            CodeHintManager.showHint(TargetEditor);
+        });
     }
     
     init();
