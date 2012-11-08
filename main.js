@@ -115,16 +115,16 @@ define(function (require, exports, module) {
     // -----------------------------------------    
     var resultHandler = [];
     resultHandler.ready = function (count) {
-        console.log("ready called: count " + count);
+        //console.log("ready called: count " + count);
     };
     
     resultHandler.success = function (count) {
-        console.log("success called: count " + count);
+        //console.log("success called: count " + count);
     };
     
     resultHandler.markMyWords = function (results) {
         atdResult = results;
-        console.log("markMyWords called");
+        //console.log("markMyWords called");
 
         editorForHinting = EditorManager.getCurrentFullEditor();
         var cm = editorForHinting._codeMirror;
@@ -133,13 +133,19 @@ define(function (require, exports, module) {
         var text = editorForHinting.document.getText();
         // walk words / tokens
         var i;
+        var wordCursor = [];
         for (i = 0; i < words.length; i++) {
             var word = words[i];
             if (word !== undefined && word !== "") {
-                var pos = text.indexOf(word);
+                var currentCursor = wordCursor[word];
+                if (currentCursor === undefined) {
+                    currentCursor = 0;
+                }
+                var pos = text.indexOf(word, currentCursor + 1);
 
                 var current  = atdResult.errors['__' + word];
                 if (current !== undefined && current.pretoks !== undefined) {
+                    wordCursor[word] = pos;
 //                    console.log("marking word " + word);
 //                    console.log("   at pos is " + pos);
                     var cmPos = cm.posFromIndex(pos);
@@ -161,6 +167,7 @@ define(function (require, exports, module) {
     // initiate spell check
     // -----------------------------------------  
     var _check_spelling = function () {
+        atdResult = null;
         activeSelection = _getActiveSelection();
         if (activeSelection !== undefined && activeSelection !== "") {
             spellCheck.AtD.check(activeSelection, resultHandler);
