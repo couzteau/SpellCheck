@@ -218,14 +218,20 @@ define(function (require, exports, module) {
     SpellingHints.prototype.search = function (query) {
 
         var i,
-            returnObject = [];
+            returnObject = [],
+            suggestionsAdded = [];
         for (i = 0; i < atdResult.suggestions.length; i++) {
             var suggestion = atdResult.suggestions[i];
             
             if (query.queryStr.match(suggestion.matcher)) {
                 var j;
                 for (j = 0; j < suggestion.suggestions.length; j++) {
-                    returnObject.push(suggestion.suggestions[j]);
+                    // TODO check if suggestion is available already
+                    if(!suggestionsAdded[suggestion.suggestions[j]]) {
+                        returnObject.push(suggestion.suggestions[j]);
+                    }    
+                    suggestionsAdded[suggestion.suggestions[j]] = true;
+
                 }
             }
         }
