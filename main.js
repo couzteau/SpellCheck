@@ -125,7 +125,6 @@ define(function (require, exports, module) {
     resultHandler.markMyWords = function (results) {
         atdResult = results;
         
-        //console.log("markMyWords called");
         $(targetEditor.getScrollerElement()).off('click', function (event) {
             event.stopPropagation();
             CodeHintManager.showHint(targetEditor);
@@ -142,11 +141,15 @@ define(function (require, exports, module) {
         for (i = 0; i < words.length; i++) {
             var word = words[i];
             if (word !== undefined && word !== "") {
+                // use the index of the last occurrence 
+                // of the word as offset.
                 var currentCursor = wordCursor[word];
                 if (currentCursor === undefined) {
                     currentCursor = 0;
+                } else {
+                    currentCursor++;
                 }
-                var pos = text.indexOf(word, currentCursor + 1);
+                var pos = text.indexOf(word, currentCursor);
 
                 var current  = atdResult.errors['__' + word];
                 if (current !== undefined && current.pretoks !== undefined) {
