@@ -44,7 +44,7 @@ define(function (require, exports, module) {
     var CHECK_SPELLING = "check_spelling";
     var activeSelection = "";
     var atdResult;
-    var editorForHinting;
+    var targetEditor;
     
 
     
@@ -124,13 +124,18 @@ define(function (require, exports, module) {
     
     resultHandler.markMyWords = function (results) {
         atdResult = results;
+        
         //console.log("markMyWords called");
-
-        editorForHinting = EditorManager.getCurrentFullEditor();
-        var cm = editorForHinting._codeMirror;
+        $(targetEditor.getScrollerElement()).off('click', function (event) {
+            event.stopPropagation();
+            CodeHintManager.showHint(targetEditor);
+        });
+        
+        targetEditor = EditorManager.getCurrentFullEditor();
+        var cm = targetEditor._codeMirror;
         // tokenize
         var words = activeSelection.split(/\W/);
-        var text = editorForHinting.document.getText();
+        var text = targetEditor.document.getText();
         // walk words / tokens
         var i;
         var wordCursor = [];
@@ -151,15 +156,15 @@ define(function (require, exports, module) {
                     var cmPos = cm.posFromIndex(pos);
                     // highlight
                     cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
-                    editorForHinting.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
+                    targetEditor.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
                 }
             }
         }
 
 
-        $(editorForHinting.getScrollerElement()).on('click', function (event) {
+        $(targetEditor.getScrollerElement()).on('click', function (event) {
             event.stopPropagation();
-            CodeHintManager.showHint(editorForHinting);
+            CodeHintManager.showHint(targetEditor);
         });
     };
     
@@ -304,6 +309,7 @@ define(function (require, exports, module) {
     // -----------------------------------------
     function init() {
         ExtensionUtils.loadStyleSheet(module, "styles.css");
+        targetEditor = EditorManager.getCurrentFullEditor();
     }
     
     init();
