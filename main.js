@@ -227,9 +227,9 @@ define(function (require, exports, module) {
                 var j;
                 for (j = 0; j < suggestion.suggestions.length; j++) {
                     // TODO check if suggestion is available already
-                    if(!suggestionsAdded[suggestion.suggestions[j]]) {
+                    if (!suggestionsAdded[suggestion.suggestions[j]]) {
                         returnObject.push(suggestion.suggestions[j]);
-                    }    
+                    }
                     suggestionsAdded[suggestion.suggestions[j]] = true;
 
                 }
@@ -256,7 +256,11 @@ define(function (require, exports, module) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
             token;
+        
         token = cm.getRange(boundaries.start, boundaries.end);
+        var x = cm.getTokenAt(cursor);
+        // TODO only return query if word at cursor has class AtD_hints_available
+        // else make placebo query
         var query = {queryStr: token};
 
 
