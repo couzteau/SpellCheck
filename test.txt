@@ -1,4 +1,16 @@
+Why is AtD awesome?
+- only 15k and access to 75M word dictionary
+- languages, english, german, french, portugese, spanish
+- spell+ grammar  + style checking
+- open source / free
+
+cons - requires online.
+- depnds on service availabilty
+
+
+
 texxt inlude  wih typos  makes  sense? 
+
 tea is four  ecsclusieve mebmesr olny? 
 Teusday.
 
