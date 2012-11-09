@@ -23,6 +23,8 @@ Chiacog
 
 Willkommen zum Spell Checking in Brackets. Keine Ahnung, ob dass jetzt funktioniert.
 
+Avant j'utilisais un script, avec ce panneau c'est plus simple. N'oubliez pas de régler à 240ppp la résolution dans Camera Raw (Options de flux de production), sinon la taille du calque est modifiée.
+
 Poem
 ____
 The Spelling Chequer (or poet tree without mist takes)
