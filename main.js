@@ -47,6 +47,7 @@ define(function (require, exports, module) {
     var targetEditor;
     var selelectionBoundary;
     var textMarkers = [];
+    var wordErrorMap = [];
     
 
     
@@ -61,7 +62,7 @@ define(function (require, exports, module) {
         EditorManager.getFocusedEditor()._codeMirror.replaceSelection(text);
     };
     
-    function findWordBoundariesForCursor(editor, cursor) {
+    function findWordBoundariesForCursor(editor, cursor, currentErr) {
         // [\s$,\.\=\!-_#]
         
         // Try to use Editor.selectWordAt? - doesn't work as expected.
@@ -93,12 +94,39 @@ define(function (require, exports, module) {
             token = cm.getRange(start, end);
             if (prevToken.valueOf() === token.valueOf()) {
                 keepSearchingForWordStart = false;
+                start.ch = start.ch + 1;
             }
         }
         while (keepSearchingForWordEnd) {
-            match = token.match(/\w[\s,\.\=\!#\?\-%&\*]/);
+            if (currentErr === undefined) {
+                match = token.match(/\w[\s,\.\=\!#\?\-%&\*]/);
+            } else {
+                var key;
+                for (key in currentErr.pretoks) {
+                    if (currentErr.pretoks.hasOwnProperty(key)) {
+                        var i;
+                        for (i = 0; i < currentErr.pretoks[key].length; i++) {
+                            match = token.match(currentErr.pretoks[key][i].regexp);
+                            if (match) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!match) {
+                    var j;
+                    for (j = 0; j < currentErr.defaults.length; j++) {
+                        match = token.match(currentErr.defaults[j].regexp);
+                        if (match) {
+                            break;
+                        }
+                    }
+                }
+            }
             if (match) {
-                end.ch = end.ch - 1;
+                if (currentErr === undefined) {
+                    end.ch = end.ch - 1;
+                }
                 keepSearchingForWordEnd = false;
             } else {
                 end.ch = end.ch + 1;
@@ -141,7 +169,7 @@ define(function (require, exports, module) {
         
         selelectionBoundary = targetEditor.getSelection();
         var selStart = targetEditor.indexFromPos(selelectionBoundary.start);
-        // walk words / tokens
+        // walk words / tokens in selection
         var i;
         var wordCursor = [];
         for (i = 0; i < words.length; i++) {
@@ -153,20 +181,18 @@ define(function (require, exports, module) {
                 }
                 var index = text.indexOf(word, currentCursor + 1);
 
-                var current  = atdResult.errors['__' + word];
-                if (current !== undefined && current.pretoks !== undefined) {
+                var currentErr  = atdResult.errors['__' + word];
+                if (currentErr !== undefined && currentErr.pretoks !== undefined) {
                     wordCursor[word] = index;
+                    wordErrorMap[word] = currentErr;
 //                    console.log("marking word " + word);
 //                    console.log("   at index is " + index);
                     var cmPos = cm.posFromIndex(index);
                     // highlight
-                    var boundaries = findWordBoundariesForCursor(targetEditor, cmPos);
+                    var boundaries = findWordBoundariesForCursor(targetEditor, cmPos, currentErr);
                     var token = cm.getRange(boundaries.start, boundaries.end);
-                    if (token === word) {
-                        textMarkers[i] = cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
-                        targetEditor.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
-                    }
-
+                    textMarkers[i] = cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + token.length}, "underline AtD_hints_available");
+                    targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
                 }
             }
         }
@@ -183,12 +209,17 @@ define(function (require, exports, module) {
     // -----------------------------------------  
     var _check_spelling = function () {
         atdResult = null;
+        
+        selelectionBoundary = [];
+        wordErrorMap = [];
+        
         var i;
         for (i = 0; i < textMarkers.length; i++) {
             if (textMarkers[i] !== undefined) {
                 textMarkers[i].clear();
             }
         }
+        textMarkers = [];
         activeSelection = _getActiveSelection();
         if (activeSelection !== undefined && activeSelection !== "") {
             spellCheck.AtD.check(activeSelection, resultHandler);
@@ -258,8 +289,8 @@ define(function (require, exports, module) {
                     }
                 }
             }
-            var current  = atdResult.errors['__' + query.queryStr];
-            if (current !== undefined && current.pretoks && returnObject.length === 0) {
+            var currentErr  = atdResult.errors['__' + query.queryStr];
+            if (currentErr !== undefined && currentErr.pretoks && returnObject.length === 0) {
                 returnObject.push("No suggestions available");
             }
         }
@@ -303,7 +334,12 @@ define(function (require, exports, module) {
     SpellingHints.prototype.handleSelect = function (completion, editor, cursor, closeHints) {
         var savedCursor = cursor;
         var boundaries = findWordBoundariesForCursor(editor, cursor);
-
+        var cm = editor._codeMirror;
+        var word = cm.getRange(boundaries.start, boundaries.end);
+        var error = wordErrorMap[word];
+        if (error !== undefined) {
+            boundaries = findWordBoundariesForCursor(editor, cursor, error);
+        }
         if (boundaries.start.ch !== boundaries.end.ch) {
             editor.document.replaceRange(completion, boundaries.start, boundaries.end);
         } else {
@@ -331,6 +367,10 @@ define(function (require, exports, module) {
     function init() {
         ExtensionUtils.loadStyleSheet(module, "styles.css");
         targetEditor = EditorManager.getCurrentFullEditor();
+        atdResult = null;
+        textMarkers = [];
+        selelectionBoundary = [];
+        wordErrorMap = [];
     }
     
     init();
