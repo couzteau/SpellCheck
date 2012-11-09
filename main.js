@@ -45,6 +45,7 @@ define(function (require, exports, module) {
     var activeSelection = "";
     var atdResult;
     var targetEditor;
+    var selelectionBoundary;
     
 
     
@@ -125,6 +126,7 @@ define(function (require, exports, module) {
     resultHandler.markMyWords = function (results) {
         atdResult = results;
         
+        //console.log("markMyWords called");
         $(targetEditor.getScrollerElement()).off('click', function (event) {
             event.stopPropagation();
             CodeHintManager.showHint(targetEditor);
@@ -135,30 +137,28 @@ define(function (require, exports, module) {
         // tokenize
         var words = activeSelection.split(/\W/);
         var text = targetEditor.document.getText();
+        
+        selelectionBoundary = targetEditor.getSelection();
+        var selStart = targetEditor.indexFromPos(selelectionBoundary.start);
         // walk words / tokens
         var i;
         var wordCursor = [];
         for (i = 0; i < words.length; i++) {
             var word = words[i];
             if (word !== undefined && word !== "") {
-                // use the index of the last occurrence 
-                // of the word as offset.
                 var currentCursor = wordCursor[word];
                 if (currentCursor === undefined) {
-                    currentCursor = 0;
-                } else {
-                    currentCursor++;
+                    currentCursor = selStart - 1;
                 }
-                var pos = text.indexOf(word, currentCursor);
+                var index = text.indexOf(word, currentCursor + 1);
 
                 var current  = atdResult.errors['__' + word];
                 if (current !== undefined && current.pretoks !== undefined) {
-                    wordCursor[word] = pos;
+                    wordCursor[word] = index;
 //                    console.log("marking word " + word);
-//                    console.log("   at pos is " + pos);
-                    var cmPos = cm.posFromIndex(pos);
+//                    console.log("   at index is " + index);
+                    var cmPos = cm.posFromIndex(index);
                     // highlight
-                    // TODO find boundaries should use the suggestion.matcher
                     var boundaries = findWordBoundariesForCursor(targetEditor, cmPos);
                     var token = cm.getRange(boundaries.start, boundaries.end);
                     if (token === word) {
@@ -234,25 +234,27 @@ define(function (require, exports, module) {
         var i,
             returnObject = [],
             suggestionsAdded = [];
-        for (i = 0; i < atdResult.suggestions.length; i++) {
-            var suggestion = atdResult.suggestions[i];
-            
-            if (query.queryStr.match(suggestion.matcher) ||
-                    suggestion.string.indexOf(query.queryStr) !== -1) {
-                var j;
-                for (j = 0; j < suggestion.suggestions.length; j++) {
-                    // check if suggestion is available already
-                    if (!suggestionsAdded[suggestion.suggestions[j]]) {
-                        returnObject.push(suggestion.suggestions[j]);
+        if (query.queryStr !== "") {
+            for (i = 0; i < atdResult.suggestions.length; i++) {
+                var suggestion = atdResult.suggestions[i];
+                
+                if (query.queryStr.match(suggestion.matcher) ||
+                        suggestion.string.indexOf(query.queryStr) !== -1) {
+                    var j;
+                    for (j = 0; j < suggestion.suggestions.length; j++) {
+                        // TODO check if suggestion is available already
+                        if (!suggestionsAdded[suggestion.suggestions[j]]) {
+                            returnObject.push(suggestion.suggestions[j]);
+                        }
+                        suggestionsAdded[suggestion.suggestions[j]] = true;
+    
                     }
-                    suggestionsAdded[suggestion.suggestions[j]] = true;
-
                 }
             }
-        }
-        var current  = atdResult.errors['__' + query.queryStr];
-        if (current !== undefined && current.pretoks && returnObject.length === 0) {
-            returnObject.push("No suggestions available");
+            var current  = atdResult.errors['__' + query.queryStr];
+            if (current !== undefined && current.pretoks && returnObject.length === 0) {
+                returnObject.push("No suggestions available");
+            }
         }
         return returnObject;
     };
@@ -271,14 +273,17 @@ define(function (require, exports, module) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
             token;
-        
-        token = cm.getRange(boundaries.start, boundaries.end);
-        // TODO only return query if word at cursor has class AtD_hints_available
-        // else make placebo query
-        var query = {queryStr: token};
+        if (cm.indexFromPos(selelectionBoundary.start) <= cm.indexFromPos(boundaries.start) &&
+                cm.indexFromPos(selelectionBoundary.end) >= cm.indexFromPos(boundaries.end)
+                ) {
+            // only return query if word at cursor is in selection
+            // else make placebo query
+            token = cm.getRange(boundaries.start, boundaries.end);
+        } else {
+            token = "";
+        }
 
-
-        return query;
+        return {queryStr: token};
     };
     
     /**
