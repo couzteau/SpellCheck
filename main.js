@@ -46,6 +46,7 @@ define(function (require, exports, module) {
     var atdResult;
     var targetEditor;
     var selelectionBoundary;
+    var textMarkers = [];
     
 
     
@@ -162,7 +163,7 @@ define(function (require, exports, module) {
                     var boundaries = findWordBoundariesForCursor(targetEditor, cmPos);
                     var token = cm.getRange(boundaries.start, boundaries.end);
                     if (token === word) {
-                        cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
+                        textMarkers[i] = cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + word.length}, "underline AtD_hints_available");
                         targetEditor.setCursorPos(cmPos.line, cmPos.ch + word.length - 1);
                     }
 
@@ -182,6 +183,12 @@ define(function (require, exports, module) {
     // -----------------------------------------  
     var _check_spelling = function () {
         atdResult = null;
+        var i;
+        for (i = 0; i < textMarkers.length; i++) {
+            if (textMarkers[i] !== undefined) {
+                textMarkers[i].clear();
+            }
+        }
         activeSelection = _getActiveSelection();
         if (activeSelection !== undefined && activeSelection !== "") {
             spellCheck.AtD.check(activeSelection, resultHandler);
