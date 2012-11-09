@@ -192,7 +192,7 @@ define(function (require, exports, module) {
                     // highlight
                     var boundaries = findWordBoundariesForCursor(targetEditor, cmPos, currentErr);
                     var token = cm.getRange(boundaries.start, boundaries.end);
-                    textMarkers[i] = cm.markText(cmPos, {line: cmPos.line, ch: cmPos.ch + token.length}, "underline AtD_hints_available");
+                    textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
                     targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
                 }
             }
@@ -312,13 +312,6 @@ define(function (require, exports, module) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
             token;
-        console.log(cm.indexFromPos(selelectionBoundary.start));
-        console.log(" <= ");
-        console.log(cm.indexFromPos(boundaries.start));
-        
-        console.log(cm.indexFromPos(selelectionBoundary.end));
-        console.log(" >= ");
-        console.log(cm.indexFromPos(boundaries.end) -1);
         
         if (cm.indexFromPos(selelectionBoundary.start) <= cm.indexFromPos(boundaries.start) &&
                 cm.indexFromPos(selelectionBoundary.end) >= cm.indexFromPos(boundaries.end) - 1
