@@ -21,7 +21,7 @@
  *
  */
 
-/*  texxt inlude  wih typos  makes  sense? tea is fro.  inluded? Tuesday. include A Barr */
+/*  texxt inlude  wih typos  makes  sense? tea is four  ecsclusieve mebmesr olny? */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -312,8 +312,16 @@ define(function (require, exports, module) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
             token;
+        console.log(cm.indexFromPos(selelectionBoundary.start));
+        console.log(" <= ");
+        console.log(cm.indexFromPos(boundaries.start));
+        
+        console.log(cm.indexFromPos(selelectionBoundary.end));
+        console.log(" >= ");
+        console.log(cm.indexFromPos(boundaries.end) -1);
+        
         if (cm.indexFromPos(selelectionBoundary.start) <= cm.indexFromPos(boundaries.start) &&
-                cm.indexFromPos(selelectionBoundary.end) >= cm.indexFromPos(boundaries.end)
+                cm.indexFromPos(selelectionBoundary.end) >= cm.indexFromPos(boundaries.end) - 1
                 ) {
             // only return query if word at cursor is in selection
             // else make placebo query
