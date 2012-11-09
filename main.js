@@ -21,7 +21,7 @@
  *
  */
 
-/* texxt inlude  wih typos  makes  sense? tea is fro.  inluded? Tuesday. include A Barr */
+/*  texxt inlude  wih typos  makes  sense? tea is fro.  inluded? Tuesday. include A Barr */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -97,6 +97,7 @@ define(function (require, exports, module) {
                 start.ch = start.ch + 1;
             }
         }
+        match = null;
         while (keepSearchingForWordEnd) {
             if (currentErr === undefined) {
                 match = token.match(/\w[\s,\.\=\!#\?\-%&\*]/);
