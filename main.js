@@ -83,7 +83,7 @@ define(function (require, exports, module) {
         token = cm.getRange(start, end);
         
         while (keepSearchingForWordStart) {
-            match = token.match(/[\s,\.\=\!#\?\-%&\*]\w/);
+            match = token.match(/[\s,\.\=\!#\?\-%&\*\+]\w/);
             if (match) {
                 start.ch = start.ch + 1;
                 keepSearchingForWordStart = false;
@@ -100,7 +100,7 @@ define(function (require, exports, module) {
         match = null;
         while (keepSearchingForWordEnd) {
             if (currentErr === undefined) {
-                match = token.match(/\w[\s,\.\=\!#\?\-%&\*]/);
+                match = token.match(/\w[\s,\.\=\!#\?\-%&\*\+]/);
             } else {
                 var key;
                 for (key in currentErr.pretoks) {
@@ -189,18 +189,27 @@ define(function (require, exports, module) {
                     var wrongWord = true,
                         boundaries,
                         token,
-                        index;
+                        index,
+                        pWord = "",
+                        pToken = "";
                     while (wrongWord) {
                         debugger
                         index = text.indexOf(word, currentCursor + 1);
                         boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
                         token = cm.getRange(boundaries.start, boundaries.end);
+                        if (pToken === token && pWord === word) {
+                            wrongWord = false;
+                            console.log("bailing, cannot find the right word boundary to mark.");
+                        }                        
                         if (token === word) {
                             wrongWord = false;
                             wordCursor[word] = index;
                         } else {
+                            pToken = token;
+                            pWord = word;
                             currentCursor++;
                         }
+
                     }
                     
                     wordErrorMap[word] = currentErr;
