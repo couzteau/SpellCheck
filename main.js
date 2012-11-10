@@ -164,6 +164,7 @@ define(function (require, exports, module) {
         
         targetEditor = EditorManager.getCurrentFullEditor();
         var cm = targetEditor._codeMirror;
+        
         // tokenize
         var words = activeSelection.split(/\W/);
         var text = targetEditor.document.getText();
@@ -180,18 +181,35 @@ define(function (require, exports, module) {
                 if (currentCursor === undefined) {
                     currentCursor = selStart - 1;
                 }
-                var index = text.indexOf(word, currentCursor + 1);
 
                 var currentErr  = atdResult.errors['__' + word];
                 if (currentErr !== undefined && currentErr.pretoks !== undefined) {
-                    wordCursor[word] = index;
+                    // make sure we don't accidentally find a word that has this
+                    // word as prefix
+                    var wrongWord = true,
+                        boundaries,
+                        token,
+                        index;
+                    while (wrongWord) {
+                        debugger
+                        index = text.indexOf(word, currentCursor + 1);
+                        boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
+                        token = cm.getRange(boundaries.start, boundaries.end);
+                        if (token === word) {
+                            wrongWord = false;
+                            wordCursor[word] = index;
+                        } else {
+                            currentCursor++;
+                        }
+                    }
+                    
                     wordErrorMap[word] = currentErr;
 //                    console.log("marking word " + word);
 //                    console.log("   at index is " + index);
                     var cmPos = cm.posFromIndex(index);
                     // highlight
-                    var boundaries = findWordBoundariesForCursor(targetEditor, cmPos, currentErr);
-                    var token = cm.getRange(boundaries.start, boundaries.end);
+                    boundaries = findWordBoundariesForCursor(targetEditor, cmPos, currentErr);
+                    token = cm.getRange(boundaries.start, boundaries.end);
                     textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
                     targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
                 }
