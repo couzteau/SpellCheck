@@ -193,7 +193,6 @@ define(function (require, exports, module) {
                         pWord = "",
                         pToken = "";
                     while (wrongWord) {
-                        debugger
                         index = text.indexOf(word, currentCursor + 1);
                         boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
                         token = cm.getRange(boundaries.start, boundaries.end);
