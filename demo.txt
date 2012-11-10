@@ -1,11 +1,11 @@
 Why is AtD awesome?
 - only 15k in size, access to 75M word dictionary
-- languages, english, german, french, portugese, spanish
-- spell+ grammar  + style checking
+- languages, English, German, French, Portuguese, Spanish
+- spell grammar  + style checking
 - open source / free
 
 cons - requires online.
-- depnds on service availabilty
+- depends on service availability
 
 
 
