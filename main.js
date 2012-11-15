@@ -42,12 +42,18 @@ define(function (require, exports, module) {
 
 
     var CHECK_SPELLING = "check_spelling";
+    var CHECK_SPELLING_DE = "check_spelling_de";
+    var CHECK_SPELLING_FR = "check_spelling_fr";
+    var CHECK_SPELLING_ES = "check_spelling_es";
+    var CHECK_SPELLING_PT = "check_spelling_pt";    
+    
     var activeSelection = "";
     var atdResult;
     var targetEditor;
     var selelectionBoundary;
     var textMarkers = [];
     var wordErrorMap = [];
+    var lang = "en";
     
 
     
@@ -271,6 +277,23 @@ define(function (require, exports, module) {
     // initiate spell check
     // -----------------------------------------  
     var _check_spelling = function () {
+        debugger
+        if(lang === "en"){
+            spellCheck.AtD.rpc = 'http://service.afterthedeadline.com';
+        }
+        if(lang === "de"){
+            spellCheck.AtD.rpc = 'http://de.service.afterthedeadline.com';
+        }  
+        if(lang === "fr"){
+            spellCheck.AtD.rpc = 'http://fr.service.afterthedeadline.com';
+        }    
+        if(lang === "es"){
+            spellCheck.AtD.rpc = 'http://es.service.afterthedeadline.com';
+        }   
+        if(lang === "pt"){
+            spellCheck.AtD.rpc = 'http://pt.service.afterthedeadline.com';
+        }          
+
         atdResult = null;
         
         selelectionBoundary = [];
@@ -290,17 +313,46 @@ define(function (require, exports, module) {
             var placeholder = 1;
             // TODO check entire document, really? TBD
         }
+        lang = "en";
     };
-
+    
+    var _check_spelling_de = function () {   
+        lang = "de";
+        _check_spelling();
+    }
+    var _check_spelling_fr = function () {   
+        lang = "fr";
+        _check_spelling();
+    }        
+    var _check_spelling_es = function () {   
+        lang = "es";
+        _check_spelling();
+    }
+    var _check_spelling_pt = function () {   
+        lang = "pt";
+        _check_spelling();
+    }        
     // -----------------------------------------
     // brackets menu item
     // ----------------------------------------- 
     var buildMenu = function (m) {
         m.addMenuDivider();
         m.addMenuItem(CHECK_SPELLING);
+        m.addMenuItem(CHECK_SPELLING_DE);
+        m.addMenuItem(CHECK_SPELLING_FR);
+        m.addMenuItem(CHECK_SPELLING_ES);    
+        m.addMenuItem(CHECK_SPELLING_PT);                
     };
     
     CommandManager.register("Check Spelling", CHECK_SPELLING, _check_spelling);
+    
+    CommandManager.register("Check Spelling - Deutsch", CHECK_SPELLING_DE, _check_spelling_de);    
+    
+    CommandManager.register("Check Spelling - Français", CHECK_SPELLING_FR, _check_spelling_fr);    
+    
+    CommandManager.register("Check Spelling - Español", CHECK_SPELLING_ES, _check_spelling_es);  
+
+    CommandManager.register("Check Spelling - Português", CHECK_SPELLING_PT, _check_spelling_pt);  
 
 
     var menu = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
