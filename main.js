@@ -247,6 +247,7 @@ define(function (require, exports, module) {
                             var wordTest = token.split(/\b/);
                             console.log("token test, token " + token + ", subtokens " + wordTest.length);
                             if(wordTest.length < 5){
+                                 wordErrorMap[word] = error;
                                 textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
                                 targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1); 
                             }else{
