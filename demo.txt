@@ -4,7 +4,7 @@ cons - requires online.
 
 - only 15k in size, access to 75M word dictionary
 - languages, english, german, french, Portuguese, spanish
-- spel@ grammar  + style checking
+- spell grammar  + style checking
 - open source / free
 
 
