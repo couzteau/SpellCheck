@@ -45,7 +45,7 @@ define(function (require, exports, module) {
     var CHECK_SPELLING_DE = "check_spelling_de";
     var CHECK_SPELLING_FR = "check_spelling_fr";
     var CHECK_SPELLING_ES = "check_spelling_es";
-    var CHECK_SPELLING_PT = "check_spelling_pt";    
+    var CHECK_SPELLING_PT = "check_spelling_pt";
     
     var activeSelection = "";
     var atdResult;
@@ -120,7 +120,7 @@ define(function (require, exports, module) {
                         }
                     }
                 }
-                if (!match && currentErr.defaults != undefined) {
+                if (!match && currentErr.defaults !== undefined) {
                     var j;
                     for (j = 0; j < currentErr.defaults.length; j++) {
                         match = token.match(currentErr.defaults[j].regexp);
@@ -180,20 +180,21 @@ define(function (require, exports, module) {
         });
         
         targetEditor = EditorManager.getCurrentFullEditor();
-        var cm = targetEditor._codeMirror;  
+        var cm = targetEditor._codeMirror;
         var text = targetEditor.document.getText();
 
         
         selelectionBoundary = targetEditor.getSelection();
-        var selStart = targetEditor.indexFromPos(selelectionBoundary.start);        
+        var selStart = targetEditor.indexFromPos(selelectionBoundary.start);
 
         var wordCursor = [];
-        var i = 0;
+        i = 0;
         // todo mark repeat words correctly
-        for(var errorWord in atdResult.errors){
+        var errorWord;
+        for (errorWord in atdResult.errors) {
             var markMore = true;
             // todo update currentCurser in loop
-            while(markMore){
+            while (markMore) {
                 var error = atdResult.errors[errorWord];
                 var wrongWord = true,
                     boundaries,
@@ -201,67 +202,67 @@ define(function (require, exports, module) {
                     index,
                     pWord = "",
                     pToken = "",
-                    doMark = true;            
-                var word = errorWord.replace('__','');
+                    doMark = true;
+                var word = errorWord.replace('__', '');
                 console.log(word);
                 var currentCursor = wordCursor[word];
                 if (currentCursor === undefined) {
                     currentCursor = selStart - 1;
                 }
                 index = text.indexOf(word, currentCursor + 1);
-                if(index > 0){
-                        boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
-                        token = cm.getRange(boundaries.start, boundaries.end);
-                        
-                        while (wrongWord) {
-                            index = text.indexOf(word, currentCursor + 1);
-                            var x = targetEditor.indexFromPos(selelectionBoundary.end);
-                            if(index < 0 || index > targetEditor.indexFromPos(selelectionBoundary.end)){
-                                markMore = false;
-                                doMark = false;
-                                wrongWord = false;
-                            } 
-                            if(index > 0 && index < targetEditor.indexFromPos(selelectionBoundary.end)){
-                                boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
-                                token = cm.getRange(boundaries.start, boundaries.end);
-                                if (pToken === token && pWord === word) {
-                                    wrongWord = false;
-                                    wordCursor[word] = index;
-                                    doMark = false;
-                                    console.log("bailing, cannot find the right word boundary to mark for word " + word);
-                                }                        
-                                if (token === word) {
-                                    wrongWord = false;
-                                    wordCursor[word] = index;
-                                } else {
-                                    pToken = token;
-                                    pWord = word;                                
-                                }
-                                currentCursor++;
-                            }else{
-                                wrongWord = false;                            
-                                console.log("bailing, cannot find the word boundary to mark for word " + word);                            
-                             }
-                        }                
-                        if(markMore && doMark){
-                //          console.log("marking word " + word);
-                //          console.log("   at index is " + index);
-                            var cmPos = cm.posFromIndex(index);
-                            // highlight
-                            boundaries = findWordBoundariesForCursor(targetEditor, cmPos, error);
-                            token = cm.getRange(boundaries.start, boundaries.end);
-                            var wordTest = token.split(/\b/);
-                            console.log("token test, token " + token + ", subtokens " + wordTest.length);
-                            if(wordTest.length < 5){
-                                 wordErrorMap[word] = error;
-                                textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
-                                targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1); 
-                            }else{
-                                console.log("igoniring bad token boundary " + token + ", subtokens " + wordTest.length);                                
-                            }
+                if (index > 0) {
+                    boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
+                    token = cm.getRange(boundaries.start, boundaries.end);
+                    
+                    while (wrongWord) {
+                        index = text.indexOf(word, currentCursor + 1);
+                        var x = targetEditor.indexFromPos(selelectionBoundary.end);
+                        if (index < 0 || index > targetEditor.indexFromPos(selelectionBoundary.end)) {
+                            markMore = false;
+                            doMark = false;
+                            wrongWord = false;
                         }
-                }else{
-                   console.log(" cannot find more instances of  " + word);  
+                        if (index > 0 && index < targetEditor.indexFromPos(selelectionBoundary.end)) {
+                            boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
+                            token = cm.getRange(boundaries.start, boundaries.end);
+                            if (pToken === token && pWord === word) {
+                                wrongWord = false;
+                                wordCursor[word] = index;
+                                doMark = false;
+                                //console.log("bailing, cannot find the right word boundary to mark for word " + word);
+                            }
+                            if (token === word) {
+                                wrongWord = false;
+                                wordCursor[word] = index;
+                            } else {
+                                pToken = token;
+                                pWord = word;
+                            }
+                            currentCursor++;
+                        } else {
+                            wrongWord = false;
+                            //console.log("bailing, cannot find the word boundary to mark for word " + word);
+                        }
+                    }
+                    if (markMore && doMark) {
+            //          console.log("marking word " + word);
+            //          console.log("   at index is " + index);
+                        var cmPos = cm.posFromIndex(index);
+                        // highlight
+                        boundaries = findWordBoundariesForCursor(targetEditor, cmPos, error);
+                        token = cm.getRange(boundaries.start, boundaries.end);
+                        var wordTest = token.split(/\b/);
+                        //console.log("token test, token " + token + ", subtokens " + wordTest.length);
+                        if (wordTest.length < 5) {
+                            wordErrorMap[word] = error;
+                            textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
+                            targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
+                        } else {
+                            //console.log("igoniring bad token boundary " + token + ", subtokens " + wordTest.length);
+                        }
+                    }
+                } else {
+                    //console.log(" cannot find more instances of  " + word);  
                     markMore = false;
                 }
                 i++;
@@ -271,28 +272,27 @@ define(function (require, exports, module) {
             event.stopPropagation();
             CodeHintManager.showHint(targetEditor);
         });
-    }    
+    };
     
     // -----------------------------------------
     // initiate spell check
     // -----------------------------------------  
     var _check_spelling = function () {
-        debugger
-        if(lang === "en"){
+        if (lang === "en") {
             spellCheck.AtD.rpc = 'http://service.afterthedeadline.com';
         }
-        if(lang === "de"){
+        if (lang === "de") {
             spellCheck.AtD.rpc = 'http://de.service.afterthedeadline.com';
-        }  
-        if(lang === "fr"){
+        }
+        if (lang === "fr") {
             spellCheck.AtD.rpc = 'http://fr.service.afterthedeadline.com';
-        }    
-        if(lang === "es"){
+        }
+        if (lang === "es") {
             spellCheck.AtD.rpc = 'http://es.service.afterthedeadline.com';
-        }   
-        if(lang === "pt"){
+        }
+        if (lang === "pt") {
             spellCheck.AtD.rpc = 'http://pt.service.afterthedeadline.com';
-        }          
+        }
 
         atdResult = null;
         
@@ -316,22 +316,22 @@ define(function (require, exports, module) {
         lang = "en";
     };
     
-    var _check_spelling_de = function () {   
+    var _check_spelling_de = function () {
         lang = "de";
         _check_spelling();
-    }
-    var _check_spelling_fr = function () {   
+    };
+    var _check_spelling_fr = function () {
         lang = "fr";
         _check_spelling();
-    }        
-    var _check_spelling_es = function () {   
+    };
+    var _check_spelling_es = function () {
         lang = "es";
         _check_spelling();
-    }
-    var _check_spelling_pt = function () {   
+    };
+    var _check_spelling_pt = function () {
         lang = "pt";
         _check_spelling();
-    }        
+    };
     // -----------------------------------------
     // brackets menu item
     // ----------------------------------------- 
@@ -340,19 +340,19 @@ define(function (require, exports, module) {
         m.addMenuItem(CHECK_SPELLING);
         m.addMenuItem(CHECK_SPELLING_DE);
         m.addMenuItem(CHECK_SPELLING_FR);
-        m.addMenuItem(CHECK_SPELLING_ES);    
-        m.addMenuItem(CHECK_SPELLING_PT);                
+        m.addMenuItem(CHECK_SPELLING_ES);
+        m.addMenuItem(CHECK_SPELLING_PT);
     };
     
     CommandManager.register("Check Spelling", CHECK_SPELLING, _check_spelling);
     
-    CommandManager.register("Check Spelling - Deutsch", CHECK_SPELLING_DE, _check_spelling_de);    
+    CommandManager.register("Check Spelling - Deutsch", CHECK_SPELLING_DE, _check_spelling_de);
     
-    CommandManager.register("Check Spelling - Français", CHECK_SPELLING_FR, _check_spelling_fr);    
+    CommandManager.register("Check Spelling - Français", CHECK_SPELLING_FR, _check_spelling_fr);
     
-    CommandManager.register("Check Spelling - Español", CHECK_SPELLING_ES, _check_spelling_es);  
+    CommandManager.register("Check Spelling - Español", CHECK_SPELLING_ES, _check_spelling_es);
 
-    CommandManager.register("Check Spelling - Português", CHECK_SPELLING_PT, _check_spelling_pt);  
+    CommandManager.register("Check Spelling - Português", CHECK_SPELLING_PT, _check_spelling_pt);
 
 
     var menu = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
