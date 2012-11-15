@@ -25,6 +25,9 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
+
+/* select language from the env or detect language */
+
 define(function (require, exports, module) {
     'use strict';
 
@@ -338,13 +341,14 @@ define(function (require, exports, module) {
     var buildMenu = function (m) {
         m.addMenuDivider();
         m.addMenuItem(CHECK_SPELLING);
-        m.addMenuItem(CHECK_SPELLING_DE);
-        m.addMenuItem(CHECK_SPELLING_FR);
-        m.addMenuItem(CHECK_SPELLING_ES);
-        m.addMenuItem(CHECK_SPELLING_PT);
+        // uncomment to add or switch language
+//        m.addMenuItem(CHECK_SPELLING_DE);
+//        m.addMenuItem(CHECK_SPELLING_FR);
+//        m.addMenuItem(CHECK_SPELLING_ES);
+//        m.addMenuItem(CHECK_SPELLING_PT);
     };
     
-    CommandManager.register("Check Spelling", CHECK_SPELLING, _check_spelling);
+    CommandManager.register("Check Spelling - English", CHECK_SPELLING, _check_spelling);
     
     CommandManager.register("Check Spelling - Deutsch", CHECK_SPELLING_DE, _check_spelling_de);
     
