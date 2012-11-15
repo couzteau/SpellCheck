@@ -2,6 +2,7 @@ Why is online spell checking with AtD cool?
 cons - requires online.
 - depends on service availability
 
+pros
 - only 15k in size, access to 75M word dictionary
 - languages, english, german, french, Portuguese, spanish
 - spell grammar  + style checking
