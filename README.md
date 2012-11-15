@@ -18,6 +18,9 @@ Place SpellCheck in the _brackets-app/brackets/extensions/user/_ directory, and 
 Select text and then select the command from the _Edit_ menu, or by right clicking and selecting the command from the context menu.
 
 ##Releases
+### Nov 15, 2012
+0.5.2 - Usability improvements: Fixed bugs around text selection, text marking, capitalization, containing a text to be hinted.
+
 
 ### Nov 7, 2012
 0.5.1 - Usability improvements: Fixed bugs around text selection, text marking, capitalization, containing a text to be hinted.
