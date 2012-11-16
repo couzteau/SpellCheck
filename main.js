@@ -195,80 +195,80 @@ define(function (require, exports, module) {
         // todo mark repeat words correctly
         var errorWord;
         for (errorWord in atdResult.errors) {
-            var markMore = true;
-            // todo update currentCurser in loop
-            while (markMore) {
-                var error = atdResult.errors[errorWord];
-                var wrongWord = true,
-                    boundaries,
-                    token,
-                    index,
-                    pWord = "",
-                    pToken = "",
-                    doMark = true;
-                var word = errorWord.replace('__', '');
-                console.log(word);
-                var currentCursor = wordCursor[word];
-                if (currentCursor === undefined) {
-                    currentCursor = selStart - 1;
-                }
-                index = text.indexOf(word, currentCursor + 1);
-                if (index > 0) {
-                    boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
-                    token = cm.getRange(boundaries.start, boundaries.end);
-                    
-                    while (wrongWord) {
-                        index = text.indexOf(word, currentCursor + 1);
-                        var x = targetEditor.indexFromPos(selelectionBoundary.end);
-                        if (index < 0 || index > targetEditor.indexFromPos(selelectionBoundary.end)) {
-                            markMore = false;
-                            doMark = false;
-                            wrongWord = false;
-                        }
-                        if (index > 0 && index < targetEditor.indexFromPos(selelectionBoundary.end)) {
-                            boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
-                            token = cm.getRange(boundaries.start, boundaries.end);
-                            if (pToken === token && pWord === word) {
-                                wrongWord = false;
-                                wordCursor[word] = index;
-                                doMark = false;
-                                //console.log("bailing, cannot find the right word boundary to mark for word " + word);
-                            }
-                            if (token === word) {
-                                wrongWord = false;
-                                wordCursor[word] = index;
-                            } else {
-                                pToken = token;
-                                pWord = word;
-                            }
-                            currentCursor++;
-                        } else {
-                            wrongWord = false;
-                            //console.log("bailing, cannot find the word boundary to mark for word " + word);
-                        }
+            if (atdResult.errors.hasOwnProperty(errorWord)) {
+                var markMore = true;
+                // todo update currentCurser in loop
+                while (markMore) {
+                    var error = atdResult.errors[errorWord];
+                    var wrongWord = true,
+                        boundaries,
+                        token,
+                        index,
+                        pWord = "",
+                        pToken = "",
+                        doMark = true;
+                    var word = errorWord.replace('__', '');
+                    console.log(word);
+                    var currentCursor = wordCursor[word];
+                    if (currentCursor === undefined) {
+                        currentCursor = selStart - 1;
                     }
-                    if (markMore && doMark) {
-            //          console.log("marking word " + word);
-            //          console.log("   at index is " + index);
-                        var cmPos = cm.posFromIndex(index);
-                        // highlight
-                        boundaries = findWordBoundariesForCursor(targetEditor, cmPos, error);
+                    index = text.indexOf(word, currentCursor + 1);
+                    if (index > 0) {
+                        boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
                         token = cm.getRange(boundaries.start, boundaries.end);
-                        var wordTest = token.split(/\b/);
-                        //console.log("token test, token " + token + ", subtokens " + wordTest.length);
-                        if (wordTest.length < 5) {
-                            wordErrorMap[word] = error;
-                            textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
-                            targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
-                        } else {
-                            //console.log("igoniring bad token boundary " + token + ", subtokens " + wordTest.length);
+                        
+                        while (wrongWord) {
+                            index = text.indexOf(word, currentCursor + 1);
+                            var x = targetEditor.indexFromPos(selelectionBoundary.end);
+                            if (index < 0 || index > targetEditor.indexFromPos(selelectionBoundary.end)) {
+                                markMore = false;
+                                doMark = false;
+                                wrongWord = false;
+                            }
+                            if (index > 0 && index < targetEditor.indexFromPos(selelectionBoundary.end)) {
+                                boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
+                                token = cm.getRange(boundaries.start, boundaries.end);
+                                if (pToken === token && pWord === word) {
+                                    wrongWord = false;
+                                    wordCursor[word] = index;
+                                    doMark = false;
+                                    //console.log("bailing, cannot find the right word boundary to mark for word " + word);
+                                }
+                                if (token === word) {
+                                    wrongWord = false;
+                                    wordCursor[word] = index;
+                                } else {
+                                    pToken = token;
+                                    pWord = word;
+                                }
+                                currentCursor++;
+                            } else {
+                                wrongWord = false;
+                                //console.log("bailing, cannot find the word boundary to mark for word " + word);
+                            }
                         }
+                        if (markMore && doMark) {
+    
+                            var cmPos = cm.posFromIndex(index);
+                            // highlight
+                            boundaries = findWordBoundariesForCursor(targetEditor, cmPos, error);
+                            token = cm.getRange(boundaries.start, boundaries.end);
+                            var wordTest = token.split(/\b/);
+                            //console.log("token test, token " + token + ", subtokens " + wordTest.length);
+                            if (wordTest.length < 5) {
+                                wordErrorMap[word] = error;
+                                textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
+                                i++;
+                                targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
+                            }
+                        }
+                    } else {
+                        //console.log(" cannot find more instances of  " + word);  
+                        markMore = false;
                     }
-                } else {
-                    //console.log(" cannot find more instances of  " + word);  
-                    markMore = false;
+    
                 }
-                i++;
             }
         }
         $(targetEditor.getScrollerElement()).on('click', function (event) {
