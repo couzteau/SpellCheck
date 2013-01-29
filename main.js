@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Jochen Hagenstroem. All rights reserved.
+ * Copyright (c) 2013 Jochen Hagenstroem. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,7 +21,7 @@
  *
  */
 
-/*  texxt inlude  wih typos  makes  sense? tea is four  ecsclusieve mebmesr olny? */
+/*  texxt inlude  wih typos d makes  sense? tea is four  exclusive members only? */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global define, $, brackets, btoa, atob */
 
@@ -57,6 +57,7 @@ define(function (require, exports, module) {
     var textMarkers = [];
     var wordErrorMap = [];
     var lang = "en";
+    var hasHints = false;
     
 
     
@@ -174,13 +175,6 @@ define(function (require, exports, module) {
             var string = atdResult.suggestions[i].string;
             suggestionsMap[string] = atdResult.suggestions[i];
         }
-
-        
-        //console.log(" markMyWords callled ");
-        $(targetEditor.getScrollerElement()).off('click', function (event) {
-            event.stopPropagation();
-            CodeHintManager.showHint(targetEditor);
-        });
         
         targetEditor = EditorManager.getCurrentFullEditor();
         var cm = targetEditor._codeMirror;
@@ -194,6 +188,10 @@ define(function (require, exports, module) {
         i = 0;
         // todo mark repeat words correctly
         var errorWord;
+        if (atdResult.count > 0) {
+            hasHints = true;
+        }
+            
         for (errorWord in atdResult.errors) {
             if (atdResult.errors.hasOwnProperty(errorWord)) {
                 var markMore = true;
@@ -271,10 +269,6 @@ define(function (require, exports, module) {
                 }
             }
         }
-        $(targetEditor.getScrollerElement()).on('click', function (event) {
-            event.stopPropagation();
-            CodeHintManager.showHint(targetEditor);
-        });
     };
     
     // -----------------------------------------
@@ -370,13 +364,6 @@ define(function (require, exports, module) {
     // -----------------------------------------
     /**
      * Registers as HintProvider as an object that is able to provide code hints. 
-     * When the user requests a spelling
-     * hint getQueryInfo() will be called. getQueryInfo() returns a search query 
-     * object with a filter string if hints can be provided. 
-     * search() will then be called  to create a 
-     * list of hints for the search query. When the user chooses a hint handleSelect() is called
-     * so that the hint provider can insert the hint into the editor.
-     *
      */
     function SpellingHints() {}
 
@@ -443,49 +430,76 @@ define(function (require, exports, module) {
 
         return {queryStr: token};
     };
-    
+
     /**
-     * Enters the code completion text into the editor
-     * @param {string} completion - text to insert into current code editor
-     * @param {Editor} editor
-     * @param {Cursor} current cursor location
-     * @param {boolean} closeHints - true to close hints, or false to continue hinting
+     * Determines whether HTML tag hints are available in the current editor
+     * context.
+     * 
+     * @param {Editor} editor 
+     * A non-null editor object for the active window.
+     *
+     * @param {String} implicitChar 
+     * Either null, if the hinting request was explicit, or a single character
+     * that represents the last insertion and that indicates an implicit
+     * hinting request.
+     *
+     * @return {Boolean} 
+     * Determines whether the current provider is able to provide hints for
+     * the given editor context and, in case implicitChar is non- null,
+     * whether it is appropriate to do so.
      */
-    SpellingHints.prototype.handleSelect = function (completion, editor, cursor, closeHints) {
-        var savedCursor = cursor;
-        var boundaries = findWordBoundariesForCursor(editor, cursor);
-        var cm = editor._codeMirror;
+    SpellingHints.prototype.hasHints = function (editor, implicitChar) {
+        return (hasHints && editor === targetEditor);
+    };   
+        
+    SpellingHints.prototype.getHints = function (implicitChar) {
+        var token = spellingHints.getQueryInfo(targetEditor, targetEditor.getCursorPos());
+        
+        var result = spellingHints.search(token);
+        
+        return {
+            hints: result,
+            match: ".*",
+            selectInitial: false
+        };        
+    };
+       
+    /**
+     * Inserts a given HTML tag hint into the current editor context. 
+     * 
+     * @param {String} hint 
+     * The hint to be inserted into the editor context.
+     * 
+     * @return {Boolean} 
+     * Indicates whether the manager should follow hint insertion with an
+     * additional explicit hint request.
+     */
+    SpellingHints.prototype.insertHint = function (completion) {
+        var boundaries = findWordBoundariesForCursor(targetEditor, targetEditor.getCursorPos());
+        var cm = targetEditor._codeMirror;
         var word = cm.getRange(boundaries.start, boundaries.end);
         var error = wordErrorMap[word];
         if (error !== undefined) {
-            boundaries = findWordBoundariesForCursor(editor, cursor, error);
+            boundaries = findWordBoundariesForCursor(targetEditor, cm.getCursor(), error);
         }
         if (boundaries.start.ch !== boundaries.end.ch) {
-            editor.document.replaceRange(completion, boundaries.start, boundaries.end);
+            targetEditor.document.replaceRange(completion, boundaries.start, boundaries.end);
         } else {
-            editor.document.replaceRange(completion, boundaries.start);
+            targetEditor.document.replaceRange(completion, boundaries.start);
         }
-
-    };
-
-    
-    /**
-     * Check whether to show hints on a specific key.
-     * @param {string} key -- the character for the key user just presses.
-     * @return {boolean} return true/false to indicate whether hinting should be triggered by this key.
-     */
-    SpellingHints.prototype.shouldShowHintsOnKey = function (key) {
+        
         return false;
-    };
-
+    };    
+    
     var spellingHints = new SpellingHints();
-    CodeHintManager.registerHintProvider(spellingHints);
+    CodeHintManager.registerHintProvider(spellingHints, ["all"], 0);
     
     // -----------------------------------------
     // Init
     // -----------------------------------------
-    function init() {
+    function init() {        
         ExtensionUtils.loadStyleSheet(module, "styles.css");
+        
         targetEditor = EditorManager.getCurrentFullEditor();
         atdResult = null;
         textMarkers = [];
