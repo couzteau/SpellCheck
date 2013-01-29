@@ -335,11 +335,13 @@ define(function (require, exports, module) {
     var buildMenu = function (m) {
         m.addMenuDivider();
         m.addMenuItem(CHECK_SPELLING);
-        // uncomment to add or switch language
-//        m.addMenuItem(CHECK_SPELLING_DE);
-//        m.addMenuItem(CHECK_SPELLING_FR);
-//        m.addMenuItem(CHECK_SPELLING_ES);
-//        m.addMenuItem(CHECK_SPELLING_PT);
+        //=====================================================
+        // uncomment or comment below to add or switch language
+        //=====================================================
+        m.addMenuItem(CHECK_SPELLING_DE); // German
+        // m.addMenuItem(CHECK_SPELLING_FR); // French
+        // m.addMenuItem(CHECK_SPELLING_ES); // Spanish
+        // m.addMenuItem(CHECK_SPELLING_PT); // Portugese
     };
     
     CommandManager.register("Check Spelling - English", CHECK_SPELLING, _check_spelling);
