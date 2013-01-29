@@ -432,6 +432,12 @@ define(function (require, exports, module) {
 
         return {queryStr: token};
     };
+    
+    // -----------------------------------------
+    // Register SpellCheck with CodeHintManager
+    // -----------------------------------------
+    var spellingHints = new SpellingHints();
+    CodeHintManager.registerHintProvider(spellingHints, ["all"], 0);
 
     /**
      * Determines whether HTML tag hints are available in the current editor
@@ -452,7 +458,7 @@ define(function (require, exports, module) {
      */
     SpellingHints.prototype.hasHints = function (editor, implicitChar) {
         return (hasHints && editor === targetEditor);
-    };   
+    };
         
     SpellingHints.prototype.getHints = function (implicitChar) {
         var token = spellingHints.getQueryInfo(targetEditor, targetEditor.getCursorPos());
@@ -463,7 +469,7 @@ define(function (require, exports, module) {
             hints: result,
             match: ".*",
             selectInitial: false
-        };        
+        };
     };
        
     /**
@@ -491,15 +497,14 @@ define(function (require, exports, module) {
         }
         
         return false;
-    };    
+    };
     
-    var spellingHints = new SpellingHints();
-    CodeHintManager.registerHintProvider(spellingHints, ["all"], 0);
+
     
     // -----------------------------------------
     // Init
     // -----------------------------------------
-    function init() {        
+    function init() {
         ExtensionUtils.loadStyleSheet(module, "styles.css");
         
         targetEditor = EditorManager.getCurrentFullEditor();
