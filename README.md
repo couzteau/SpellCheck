@@ -3,7 +3,7 @@ SpellCheck
 
 Spell checker extension for the Adobe Brackets Web Editor.
 
-_Note: Not compatible with latest brackets build requires pre sprint 18 build. Will be updated soon_ 
+_Note: Now compatible with brackets build >== sprint 19_ 
 
 Adobe Brackets:
 https://github.com/adobe/brackets
