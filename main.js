@@ -34,14 +34,14 @@ define(function (require, exports, module) {
 
     // Brackets modules
     var CodeHintManager = brackets.getModule("editor/CodeHintManager"),
-        EditorManager   = brackets.getModule("editor/EditorManager"),
-        ExtensionUtils  = brackets.getModule("utils/ExtensionUtils"),
-        CommandManager  = brackets.getModule("command/CommandManager"),
-        Menus           = brackets.getModule("command/Menus"),
-        StringUtils     = brackets.getModule("utils/StringUtils"),
-        TokenUtils      = brackets.getModule("utils/TokenUtils"),
-        spellCheck      = require("AtD");
-    
+        EditorManager = brackets.getModule("editor/EditorManager"),
+        ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
+        CommandManager = brackets.getModule("command/CommandManager"),
+        Menus = brackets.getModule("command/Menus"),
+        StringUtils = brackets.getModule("utils/StringUtils"),
+        TokenUtils = brackets.getModule("utils/TokenUtils"),
+        spellCheck = require("AtD");
+
 
 
     var CHECK_SPELLING = "check_spelling";
@@ -49,7 +49,7 @@ define(function (require, exports, module) {
     var CHECK_SPELLING_FR = "check_spelling_fr";
     var CHECK_SPELLING_ES = "check_spelling_es";
     var CHECK_SPELLING_PT = "check_spelling_pt";
-    
+
     var activeSelection = "";
     var atdResult;
     var targetEditor;
@@ -58,7 +58,8 @@ define(function (require, exports, module) {
     var wordErrorMap = [];
     var lang = "en";
     var hasHints = false;
-    
+    var resultHandler = [];
+
     // -----------------------------------------
     // Code Mirror integration
     // -----------------------------------------
@@ -69,14 +70,14 @@ define(function (require, exports, module) {
     var _replaceActiveSelection = function (text) {
         EditorManager.getFocusedEditor()._codeMirror.replaceSelection(text);
     };
-    
+
     function findWordBoundariesForCursor(editor, cursor, currentErr) {
         // [\s$,\.\=\!-_#]
-        
+
         // Try to use Editor.selectWordAt? - doesn't work as expected.
         // var w = editor.selectWordAt(cursor);
-        var start = {line: -1, ch: -1},
-            end = {line: -1, ch: -1},
+        var start = { line: -1, ch: -1 },
+            end = { line: -1, ch: -1 },
             cm = editor._codeMirror,
             token,
             keepSearchingForWordStart = true,
@@ -84,12 +85,12 @@ define(function (require, exports, module) {
             prevToken,
             match;
 
-        
+
         end.line = start.line = cursor.line;
         start.ch = cursor.ch;
         end.ch = start.ch + 1;
         token = cm.getRange(start, end);
-        
+
         while (keepSearchingForWordStart) {
             match = token.match(/[\s,\.\=\!#\?\-%&\*\+]\w/);
             if (match) {
@@ -148,9 +149,12 @@ define(function (require, exports, module) {
             }
         }
 
-        return {start: start, end: end};
+        return {
+            start: start,
+            end: end
+        };
     }
-    
+
     // -----------------------------------------
     // initiate spell check
     // -----------------------------------------  
@@ -172,10 +176,10 @@ define(function (require, exports, module) {
         }
 
         atdResult = null;
-        
+
         selelectionBoundary = [];
         wordErrorMap = [];
-        
+
         var i;
         for (i = 0; i < textMarkers.length; i++) {
             if (textMarkers[i] !== undefined) {
@@ -192,7 +196,7 @@ define(function (require, exports, module) {
         }
         lang = "en";
     };
-    
+
     var _check_spelling_de = function () {
         lang = "de";
         _check_spelling();
@@ -209,7 +213,7 @@ define(function (require, exports, module) {
         lang = "pt";
         _check_spelling();
     };
-    
+
     // -----------------------------------------
     // brackets menu item
     // ----------------------------------------- 
@@ -224,13 +228,13 @@ define(function (require, exports, module) {
         // m.addMenuItem(CHECK_SPELLING_ES); // Spanish
         // m.addMenuItem(CHECK_SPELLING_PT); // Portugese
     };
-    
+
     CommandManager.register("Check Spelling - English", CHECK_SPELLING, _check_spelling);
-    
+
     CommandManager.register("Check Spelling - Deutsch", CHECK_SPELLING_DE, _check_spelling_de);
-    
+
     CommandManager.register("Check Spelling - Français", CHECK_SPELLING_FR, _check_spelling_fr);
-    
+
     CommandManager.register("Check Spelling - Español", CHECK_SPELLING_ES, _check_spelling_es);
 
     CommandManager.register("Check Spelling - Português", CHECK_SPELLING_PT, _check_spelling_pt);
@@ -241,20 +245,20 @@ define(function (require, exports, module) {
 
     var contextMenu = Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU);
     buildMenu(contextMenu);
-    
+
     // -----------------------------------------
     // AtD result handler
     // -----------------------------------------    
-    var resultHandler = [];
+
     resultHandler.ready = function (count) {
         //console.log("ready called: count " + count);
     };
-    
+
     resultHandler.success = function (count) {
         //console.log("success called: count " + count);
     };
-    
-    
+
+
     resultHandler.markMyWords = function (results) {
         atdResult = results;
         var suggestionsMap = [];
@@ -264,12 +268,12 @@ define(function (require, exports, module) {
             var string = atdResult.suggestions[i].string;
             suggestionsMap[string] = atdResult.suggestions[i];
         }
-        
+
         targetEditor = EditorManager.getCurrentFullEditor();
         var cm = targetEditor._codeMirror;
         var text = targetEditor.document.getText();
 
-        
+
         selelectionBoundary = targetEditor.getSelection();
         var selStart = targetEditor.indexFromPos(selelectionBoundary.start);
 
@@ -280,7 +284,7 @@ define(function (require, exports, module) {
         if (atdResult.count > 0) {
             hasHints = true;
         }
-            
+
         for (errorWord in atdResult.errors) {
             if (atdResult.errors.hasOwnProperty(errorWord)) {
                 var markMore = true;
@@ -304,7 +308,7 @@ define(function (require, exports, module) {
                     if (index > 0) {
                         boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
                         token = cm.getRange(boundaries.start, boundaries.end);
-                        
+
                         while (wrongWord) {
                             index = text.indexOf(word, currentCursor + 1);
                             var x = targetEditor.indexFromPos(selelectionBoundary.end);
@@ -336,7 +340,7 @@ define(function (require, exports, module) {
                             }
                         }
                         if (markMore && doMark) {
-    
+
                             var cmPos = cm.posFromIndex(index);
                             // highlight
                             boundaries = findWordBoundariesForCursor(targetEditor, cmPos, error);
@@ -345,7 +349,10 @@ define(function (require, exports, module) {
                             //console.log("token test, token " + token + ", subtokens " + wordTest.length);
                             if (wordTest.length < 5) {
                                 wordErrorMap[word] = error;
-                                textMarkers[i] = cm.markText(boundaries.start, {line: boundaries.start.line, ch: boundaries.start.ch + token.length}, "underline AtD_hints_available");
+                                textMarkers[i] = cm.markText(boundaries.start, {
+                                    line: boundaries.start.line,
+                                    ch: boundaries.start.ch + token.length
+                                }, "underline AtD_hints_available");
                                 i++;
                                 targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
                             }
@@ -354,14 +361,14 @@ define(function (require, exports, module) {
                         //console.log(" cannot find more instances of  " + word);  
                         markMore = false;
                     }
-    
+
                 }
             }
         }
     };
-    
 
-    
+
+
     // -----------------------------------------
     // Hint Provider for CodeHintmanager
     // -----------------------------------------
@@ -384,9 +391,8 @@ define(function (require, exports, module) {
         if (query.queryStr !== "") {
             for (i = 0; i < atdResult.suggestions.length; i++) {
                 var suggestion = atdResult.suggestions[i];
-                
-                if (query.queryStr.match(suggestion.matcher) ||
-                        suggestion.string.indexOf(query.queryStr) !== -1) {
+
+                if (query.queryStr.match(suggestion.matcher) || suggestion.string.indexOf(query.queryStr) !== -1) {
                     var j;
                     for (j = 0; j < suggestion.suggestions.length; j++) {
                         // TODO check if suggestion is available already
@@ -394,18 +400,18 @@ define(function (require, exports, module) {
                             returnObject.push(suggestion.suggestions[j]);
                         }
                         suggestionsAdded[suggestion.suggestions[j]] = true;
-    
+
                     }
                 }
             }
-            var currentErr  = atdResult.errors['__' + query.queryStr];
+            var currentErr = atdResult.errors['__' + query.queryStr];
             if (currentErr !== undefined && currentErr.pretoks && returnObject.length === 0) {
                 returnObject.push("No suggestions available");
             }
         }
         return returnObject;
     };
-    
+
     /**
      * Figures out the text to use for the hint list query based on the text
      * around the cursor
@@ -420,10 +426,8 @@ define(function (require, exports, module) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
             token;
-        
-        if (cm.indexFromPos(selelectionBoundary.start) <= cm.indexFromPos(boundaries.start) &&
-                cm.indexFromPos(selelectionBoundary.end) >= cm.indexFromPos(boundaries.end) - 1
-                ) {
+
+        if (cm.indexFromPos(selelectionBoundary.start) <= cm.indexFromPos(boundaries.start) && cm.indexFromPos(selelectionBoundary.end) >= cm.indexFromPos(boundaries.end) - 1) {
             // only return query if word at cursor is in selection
             // else make placebo query
             token = cm.getRange(boundaries.start, boundaries.end);
@@ -431,9 +435,11 @@ define(function (require, exports, module) {
             token = "";
         }
 
-        return {queryStr: token};
+        return {
+            queryStr: token
+        };
     };
-    
+
     // -----------------------------------------
     // Register SpellCheck with CodeHintManager
     // -----------------------------------------
@@ -460,19 +466,19 @@ define(function (require, exports, module) {
     SpellingHints.prototype.hasHints = function (editor, implicitChar) {
         return (hasHints && editor === targetEditor);
     };
-        
+
     SpellingHints.prototype.getHints = function (implicitChar) {
         var token = spellingHints.getQueryInfo(targetEditor, targetEditor.getCursorPos());
-        
+
         var result = spellingHints.search(token);
-        
+
         return {
             hints: result,
             match: ".*",
             selectInitial: false
         };
     };
-       
+
     /**
      * Inserts a given HTML tag hint into the current editor context. 
      * 
@@ -496,25 +502,25 @@ define(function (require, exports, module) {
         } else {
             targetEditor.document.replaceRange(completion, boundaries.start);
         }
-        
+
         return false;
     };
-    
 
-    
+
+
     // -----------------------------------------
     // Init
     // -----------------------------------------
     function init() {
         ExtensionUtils.loadStyleSheet(module, "styles.css");
-        
+
         targetEditor = EditorManager.getCurrentFullEditor();
         atdResult = null;
         textMarkers = [];
         selelectionBoundary = [];
         wordErrorMap = [];
     }
-    
+
     init();
-    
+
 });
