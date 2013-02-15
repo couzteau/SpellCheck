@@ -22,8 +22,8 @@
  */
 
 /*  texxt inlude  wih typos d makes  sense? tea is four  exclusive members only? */
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, $, brackets, btoa, atob */
+/*jslint vars: true, plusplus: true, devel: true, nomen: true,  regexp: true, indent: 4, maxerr: 50 */
+/*global define, $, brackets, btoa, atob, CodeMirror */
 
 
 /* select language from the env or detect language */
@@ -70,6 +70,18 @@ define(function (require, exports, module) {
     var _replaceActiveSelection = function (text) {
         EditorManager.getFocusedEditor()._codeMirror.replaceSelection(text);
     };
+    
+
+    // Maintain backwards compatibity with CodeMirror 2
+    function markText(cm, start, end, className) {
+        if (CodeMirror.version) {
+            // CM3 call
+            return cm.markText(start, end, {className: className});
+        } else {
+            // CM2 call
+            return cm.markText(start, end, className);
+        }
+    }
 
     function findWordBoundariesForCursor(editor, cursor, currentErr) {
         // [\s$,\.\=\!-_#]
@@ -258,13 +270,7 @@ define(function (require, exports, module) {
         //console.log("success called: count " + count);
     };
     
-    function markText(cm, start, end, className) {
-        if (CodeMirror.version) {
-            return cm.markText(start, end, {className: className});
-        } else {
-            return cm.markText(start, end, className);
-        }
-    }    
+
 
 
     resultHandler.markMyWords = function (results) {
@@ -513,7 +519,7 @@ define(function (require, exports, module) {
 
         return false;
     };
-
+    
 
 
     // -----------------------------------------
