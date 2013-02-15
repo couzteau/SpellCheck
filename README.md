@@ -27,6 +27,9 @@ https://github.com/adobe/brackets
 To enable more languages (i.e. German, French, Spanish or Portuguese) uncomment lines in main.js, lines 129-132, i.e. to enable German
     _m.addMenuItem(CHECK_SPELLING_DE);_
 ##Releases
+### Feb 15, 2013
+0.5.4 - Update text high lighting for compatibility with code mirror 2 and 3. Brackets 0.20 / Sprint 20 switches to CM3. Since Edge Code is still on CM2 backwards compatibilty is maintained. 
+
 ### Jan 29, 2013
 0.5.3 - Implemented API changes in CodeHintManager introduced in Brackes 0.18 / Sprint 18. Change is not backwards compatible. Moving forward only buils >= 0.18.x are supported.
 
