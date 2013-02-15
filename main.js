@@ -257,6 +257,14 @@ define(function (require, exports, module) {
     resultHandler.success = function (count) {
         //console.log("success called: count " + count);
     };
+    
+    function markText(cm, start, end, className) {
+        if (CodeMirror.version) {
+            return cm.markText(start, end, {className: className});
+        } else {
+            return cm.markText(start, end, className);
+        }
+    }    
 
 
     resultHandler.markMyWords = function (results) {
@@ -349,7 +357,7 @@ define(function (require, exports, module) {
                             //console.log("token test, token " + token + ", subtokens " + wordTest.length);
                             if (wordTest.length < 5) {
                                 wordErrorMap[word] = error;
-                                textMarkers[i] = cm.markText(boundaries.start, {
+                                textMarkers[i] = markText(cm, boundaries.start, {
                                     line: boundaries.start.line,
                                     ch: boundaries.start.ch + token.length
                                 }, "underline AtD_hints_available");
