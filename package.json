@@ -1,5 +1,5 @@
 {
-   "name": "SpellCheck",
+   "name": "spell-check",
    "version": "0.5.4",
    "description": "Spell checking the Adobe Brackets Web Editor.",
    "keywords": [
