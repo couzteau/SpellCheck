@@ -81,7 +81,7 @@ define(function (require, exports, module) {
             url : AtD.rpc + '/checkDocument',
             data : 'key=' + AtD.api_key + '&data=' + text,
             format : 'raw',
-            dataType : ($.browser.msie) ? "text" : "xml",
+            dataType : "xml",
     
             error : function (XHR, status, error) {
                 if (AtD.callback_f !== undefined && AtD.callback_f.error !== undefined) {
