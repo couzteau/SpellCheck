@@ -28,6 +28,9 @@ To enable more languages (i.e. German, French, Spanish or Portuguese) uncomment 
     _m.addMenuItem(CHECK_SPELLING_DE);_
 ##Releases
 ### Jun 16, 2014
+0.5.7 - fix issue where some words would not be marked for correction if no selection was made 
+
+### Jun 16, 2014
 0.5.6 - enable more languages 
 
 ### Jun 16, 2014

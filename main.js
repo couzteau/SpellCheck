@@ -296,11 +296,20 @@ define(function (require, exports, module) {
 
 
         selectionBoundary = targetEditor.getSelection();
-        validSelection = false;
-        var selStart;
+        
+        var selStart,
+            selEnd;
+        
         if (!selectionEmpty(selectionBoundary)) {
             validSelection = true;
             selStart = targetEditor.indexFromPos(selectionBoundary.start);
+            selEnd = targetEditor.indexFromPos(selectionBoundary.end);
+        } else {
+            var ed = EditorManager.getFocusedEditor();
+            
+            validSelection = false;
+            selStart = 0;
+            selEnd = ed.document.getText().length - 1;
         }
         
         var wordCursor = [];
@@ -337,13 +346,13 @@ define(function (require, exports, module) {
 
                         while (wrongWord) {
                             index = text.indexOf(word, currentCursor + 1);
-                            var x = targetEditor.indexFromPos(selectionBoundary.end);
-                            if (index < 0 || index > targetEditor.indexFromPos(selectionBoundary.end)) {
+                            var x = selEnd;
+                            if (index < 0 || index > selEnd) {
                                 markMore = false;
                                 doMark = false;
                                 wrongWord = false;
                             }
-                            if (index > 0 && index < targetEditor.indexFromPos(selectionBoundary.end)) {
+                            if (index > 0 && index < selEnd) {
                                 boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
                                 token = cm.getRange(boundaries.start, boundaries.end);
                                 if (pToken === token && pWord === word) {
