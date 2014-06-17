@@ -48,7 +48,8 @@ define(function (require, exports, module) {
         CHECK_SPELLING_DE = "check_spelling_de",
         CHECK_SPELLING_FR = "check_spelling_fr",
         CHECK_SPELLING_ES = "check_spelling_es",
-        CHECK_SPELLING_PT = "check_spelling_pt";
+        CHECK_SPELLING_PT = "check_spelling_pt",
+        CLEAR_SPELLCHECK_MARKERS = "clear_spellcheck_makers";
 
     var textToCheck = "",
         atdResult,
@@ -172,7 +173,9 @@ define(function (require, exports, module) {
             end: end
         };
     }
-
+    
+    var _clearSpellcheck;
+    
     // -----------------------------------------
     // initiate spell check
     // -----------------------------------------  
@@ -198,12 +201,8 @@ define(function (require, exports, module) {
         selectionBoundary = [];
         wordErrorMap = [];
 
-        var i;
-        for (i = 0; i < textMarkers.length; i++) {
-            if (textMarkers[i] !== undefined) {
-                textMarkers[i].clear();
-            }
-        }
+        _clearSpellcheck();
+        
         textMarkers = [];
         textToCheck = _getText();
         if (textToCheck) {
@@ -229,6 +228,15 @@ define(function (require, exports, module) {
         lang = "pt";
         _check_spelling();
     };
+    _clearSpellcheck = function () {
+        var i;
+        for (i = 0; i < textMarkers.length; i++) {
+            if (textMarkers[i] !== undefined) {
+                textMarkers[i].clear();
+            }
+        }
+        textMarkers = [];
+    };
 
     // -----------------------------------------
     // brackets menu item
@@ -243,6 +251,7 @@ define(function (require, exports, module) {
         m.addMenuItem(CHECK_SPELLING_FR); // French
         m.addMenuItem(CHECK_SPELLING_ES); // Spanish
         m.addMenuItem(CHECK_SPELLING_PT); // Portugese
+        m.addMenuItem(CLEAR_SPELLCHECK_MARKERS); // Clear markers
     };
 
     CommandManager.register("Check Spelling - English", CHECK_SPELLING, _check_spelling);
@@ -254,6 +263,8 @@ define(function (require, exports, module) {
     CommandManager.register("Check Spelling - Español", CHECK_SPELLING_ES, _check_spelling_es);
 
     CommandManager.register("Check Spelling - Português", CHECK_SPELLING_PT, _check_spelling_pt);
+    
+    CommandManager.register("Clear markers", CLEAR_SPELLCHECK_MARKERS, _clearSpellcheck);
 
 
     var menu = Menus.getMenu(Menus.AppMenuBar.EDIT_MENU);
