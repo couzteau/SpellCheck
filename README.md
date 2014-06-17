@@ -20,8 +20,8 @@ https://github.com/adobe/brackets
 
 ## Usage
 
-- Select text and then select the command _Check Spelling - English_ from the _Edit_ menu, or by right clicking and selecting the command from the context menu. This will hi-lite any words in the selection that have spelling hints available.
-- Navigate cursor to a hi-lited word and hit CTRL-space to open the hint list dropdown.
+- Select text and then select the command _Check Spelling - English_ from the _Edit_ menu, or by right clicking and selecting the command from the context menu. This will hi-lite any words in the selection that have spelling hints available. If no text selection is made the whole document will be checked
+- Navigate cursor to a high-lighted word and hit CTRL-space to open the hint list dropdown.
 - select suggestion from dropdown to apply
 
 To enable more languages (i.e. German, French, Spanish or Portuguese) uncomment lines in main.js, lines 129-132, i.e. to enable German
