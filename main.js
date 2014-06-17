@@ -519,9 +519,12 @@ define(function (require, exports, module) {
     };
 
     SpellingHints.prototype.getHints = function (implicitChar) {
-        var token = spellingHints.getQueryInfo(targetEditor, targetEditor.getCursorPos());
-
-        var result = spellingHints.search(token);
+        var result = [];
+        
+        if (textMarkers.length > 0) {
+            var token = spellingHints.getQueryInfo(targetEditor, targetEditor.getCursorPos());
+            result = spellingHints.search(token);
+        }
 
         return {
             hints: result,
