@@ -50,10 +50,10 @@ define(function (require, exports, module) {
     var CHECK_SPELLING_ES = "check_spelling_es";
     var CHECK_SPELLING_PT = "check_spelling_pt";
 
-    var activeSelection = "";
+    var textToCheck = "";
     var atdResult;
     var targetEditor;
-    var selelectionBoundary;
+    var selectionBoundary;
     var textMarkers = [];
     var wordErrorMap = [];
     var lang = "en";
@@ -63,14 +63,19 @@ define(function (require, exports, module) {
     // -----------------------------------------
     // Code Mirror integration
     // -----------------------------------------
-    var _getActiveSelection = function () {
-        return EditorManager.getFocusedEditor().getSelectedText();
+    var _getText = function () {
+        var returnText = null,
+            ed = EditorManager.getFocusedEditor();
+        
+        if (ed) {
+            returnText = EditorManager.getFocusedEditor().getSelectedText();
+            if (!returnText) {
+                returnText = ed.document.getText();
+            }
+        }
+        
+        return returnText;
     };
-
-    var _replaceActiveSelection = function (text) {
-        EditorManager.getFocusedEditor()._codeMirror.replaceSelection(text);
-    };
-    
 
     // Maintain backwards compatibity with CodeMirror 2
     function markText(cm, start, end, className) {
@@ -189,7 +194,7 @@ define(function (require, exports, module) {
 
         atdResult = null;
 
-        selelectionBoundary = [];
+        selectionBoundary = [];
         wordErrorMap = [];
 
         var i;
@@ -199,13 +204,11 @@ define(function (require, exports, module) {
             }
         }
         textMarkers = [];
-        activeSelection = _getActiveSelection();
-        if (activeSelection !== undefined && activeSelection !== "") {
-            spellCheck.AtD.check(activeSelection, resultHandler);
-        } else {
-            var placeholder = 1;
-            // TODO check entire document, really? TBD
+        textToCheck = _getText();
+        if (textToCheck) {
+            spellCheck.AtD.check(textToCheck, resultHandler);
         }
+        
         lang = "en";
     };
 
@@ -236,9 +239,9 @@ define(function (require, exports, module) {
         // uncomment or comment below to add or switch language
         //=====================================================
         m.addMenuItem(CHECK_SPELLING_DE); // German
-        // m.addMenuItem(CHECK_SPELLING_FR); // French
-        // m.addMenuItem(CHECK_SPELLING_ES); // Spanish
-        // m.addMenuItem(CHECK_SPELLING_PT); // Portugese
+        m.addMenuItem(CHECK_SPELLING_FR); // French
+        m.addMenuItem(CHECK_SPELLING_ES); // Spanish
+        m.addMenuItem(CHECK_SPELLING_PT); // Portugese
     };
 
     CommandManager.register("Check Spelling - English", CHECK_SPELLING, _check_spelling);
@@ -270,8 +273,12 @@ define(function (require, exports, module) {
         //console.log("success called: count " + count);
     };
     
+    function selectionEmpty(selection) {
+        // "{"start":{"line":23,"ch":0},"end":{"line":23,"ch":0},"reversed":false}"
 
-
+        return (selection.start.line === selection.end.line &&
+               selection.start.ch === selection.end.ch);
+    }
 
     resultHandler.markMyWords = function (results) {
         atdResult = results;
@@ -288,9 +295,12 @@ define(function (require, exports, module) {
         var text = targetEditor.document.getText();
 
 
-        selelectionBoundary = targetEditor.getSelection();
-        var selStart = targetEditor.indexFromPos(selelectionBoundary.start);
-
+        selectionBoundary = targetEditor.getSelection();
+        var selStart;
+        if (!selectionEmpty(selectionBoundary)) {
+            selStart = targetEditor.indexFromPos(selectionBoundary.start);
+        }
+        
         var wordCursor = [];
         i = 0;
         // todo mark repeat words correctly
@@ -325,13 +335,13 @@ define(function (require, exports, module) {
 
                         while (wrongWord) {
                             index = text.indexOf(word, currentCursor + 1);
-                            var x = targetEditor.indexFromPos(selelectionBoundary.end);
-                            if (index < 0 || index > targetEditor.indexFromPos(selelectionBoundary.end)) {
+                            var x = targetEditor.indexFromPos(selectionBoundary.end);
+                            if (index < 0 || index > targetEditor.indexFromPos(selectionBoundary.end)) {
                                 markMore = false;
                                 doMark = false;
                                 wrongWord = false;
                             }
-                            if (index > 0 && index < targetEditor.indexFromPos(selelectionBoundary.end)) {
+                            if (index > 0 && index < targetEditor.indexFromPos(selectionBoundary.end)) {
                                 boundaries = findWordBoundariesForCursor(targetEditor, cm.posFromIndex(index));
                                 token = cm.getRange(boundaries.start, boundaries.end);
                                 if (pToken === token && pWord === word) {
@@ -439,15 +449,7 @@ define(function (require, exports, module) {
     SpellingHints.prototype.getQueryInfo = function (editor, cursor) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
-            token;
-
-        if (cm.indexFromPos(selelectionBoundary.start) <= cm.indexFromPos(boundaries.start) && cm.indexFromPos(selelectionBoundary.end) >= cm.indexFromPos(boundaries.end) - 1) {
-            // only return query if word at cursor is in selection
-            // else make placebo query
             token = cm.getRange(boundaries.start, boundaries.end);
-        } else {
-            token = "";
-        }
 
         return {
             queryStr: token
@@ -531,7 +533,7 @@ define(function (require, exports, module) {
         targetEditor = EditorManager.getCurrentFullEditor();
         atdResult = null;
         textMarkers = [];
-        selelectionBoundary = [];
+        selectionBoundary = [];
         wordErrorMap = [];
     }
 
