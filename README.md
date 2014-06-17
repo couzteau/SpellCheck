@@ -12,6 +12,9 @@ https://github.com/adobe/brackets
 * integrates the powerful online spell checker After The Deadline, http://afterthedeadline.com/
 
 ## Installation
+- install from Brackets Extension manager (tool bar / File Menu). Search for ``spell-check``
+
+or
 
 - Launch Brackets ( >== 0.18.x), choose _Show Extensions Folder_ from the _Help_ menu.
 - Place SpellCheck in the Extensions folder, i.e. on Mac _/Users/jh/Library/Application Support/Brackets/extensions/user/_ directory.
