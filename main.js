@@ -44,21 +44,22 @@ define(function (require, exports, module) {
 
 
 
-    var CHECK_SPELLING = "check_spelling";
-    var CHECK_SPELLING_DE = "check_spelling_de";
-    var CHECK_SPELLING_FR = "check_spelling_fr";
-    var CHECK_SPELLING_ES = "check_spelling_es";
-    var CHECK_SPELLING_PT = "check_spelling_pt";
+    var CHECK_SPELLING = "check_spelling",
+        CHECK_SPELLING_DE = "check_spelling_de",
+        CHECK_SPELLING_FR = "check_spelling_fr",
+        CHECK_SPELLING_ES = "check_spelling_es",
+        CHECK_SPELLING_PT = "check_spelling_pt";
 
-    var textToCheck = "";
-    var atdResult;
-    var targetEditor;
-    var selectionBoundary;
-    var textMarkers = [];
-    var wordErrorMap = [];
-    var lang = "en";
-    var hasHints = false;
-    var resultHandler = [];
+    var textToCheck = "",
+        atdResult,
+        targetEditor,
+        selectionBoundary,
+        textMarkers = [],
+        wordErrorMap = [],
+        lang = "en",
+        hasHints = false,
+        resultHandler = [],
+        validSelection;
 
     // -----------------------------------------
     // Code Mirror integration
@@ -274,7 +275,6 @@ define(function (require, exports, module) {
     };
     
     function selectionEmpty(selection) {
-        // "{"start":{"line":23,"ch":0},"end":{"line":23,"ch":0},"reversed":false}"
 
         return (selection.start.line === selection.end.line &&
                selection.start.ch === selection.end.ch);
@@ -296,8 +296,10 @@ define(function (require, exports, module) {
 
 
         selectionBoundary = targetEditor.getSelection();
+        validSelection = false;
         var selStart;
         if (!selectionEmpty(selectionBoundary)) {
+            validSelection = true;
             selStart = targetEditor.indexFromPos(selectionBoundary.start);
         }
         
@@ -449,7 +451,20 @@ define(function (require, exports, module) {
     SpellingHints.prototype.getQueryInfo = function (editor, cursor) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
+            token;
+        
+        if (validSelection) {
+            if (cm.indexFromPos(selectionBoundary.start) <= cm.indexFromPos(boundaries.start) &&
+                    cm.indexFromPos(selectionBoundary.end) >= cm.indexFromPos(boundaries.end) - 1) {
+            // only return query if word at cursor is in selection
+            // else make placebo query
+                token = cm.getRange(boundaries.start, boundaries.end);
+            } else {
+                token = "";
+            }
+        } else {
             token = cm.getRange(boundaries.start, boundaries.end);
+        }
 
         return {
             queryStr: token
