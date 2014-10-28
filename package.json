@@ -1,6 +1,6 @@
 {
    "name": "spell-check",
-   "version": "0.5.7",
+   "version": "0.5.8",
    "description": "Spell checking the Adobe Brackets Web Editor.",
    "homepage": "https://github.com/couzteau/SpellCheck",
    "author": "Jochen Hagentröm",     
