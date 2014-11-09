@@ -15,7 +15,7 @@ define(function (require, exports, module) {
  * Project     :  http://www.afterthedeadline.com/development.slp
  * Contact     : raffi@automattic.com
  *
- * Derived from 
+ * Derived from
  *
  * jquery.atd.js -  writing check with After the Deadline
  * Author      : Raphael Mudge, Automattic Inc.
@@ -23,7 +23,7 @@ define(function (require, exports, module) {
  * Project     :  http://www.afterthedeadline.com/development.slp
  * Contact     : raffi@automattic.com
  *
- * Derived from: 
+ * Derived from:
  *
  * jquery.spellchecker.js - a simple jQuery Spell Checker
  * Copyright (c) 2008 Richard Willis
@@ -42,57 +42,57 @@ define(function (require, exports, module) {
             i18n : {},
             listener : {}
         };
-    
+
     AtD.getLang = function (key, defaultk) {
         if (AtD.i18n[key] === undefined) {
             return defaultk;
         }
         return AtD.i18n[key];
     };
-    
+
     AtD.addI18n = function (localizations) {
         AtD.i18n = localizations;
         AtD.core.addI18n(localizations);
     };
-    
+
     AtD.setIgnoreStrings = function (string) {
         AtD.core.setIgnoreStrings(string);
     };
-    
+
     AtD.showTypes = function (string) {
         AtD.core.showTypes(string);
     };
-    
 
-    
+
+
     /* check a div for any incorrectly spelled words */
     AtD.check = function (text, callback_f) {
         /* checks if a global var for click stats exists and increments it if it does... */
 //        if (typeof AtD_proofread_click_count !== "undefined") {
 //            AtD_proofread_click_count = AtD_proofread_click_count + 1;
 //        }
-    
+
         AtD.callback_f = callback_f; /* remember the callback for later */
-    
+
         text     = encodeURIComponent(text); /* re-escaping % is not necessary here. don't do it */
-    
+
         $.ajax({
             type : "POST",
             url : AtD.rpc + '/checkDocument',
             data : 'key=' + AtD.api_key + '&data=' + text,
             format : 'raw',
             dataType : "xml",
-    
+
             error : function (XHR, status, error) {
                 if (AtD.callback_f !== undefined && AtD.callback_f.error !== undefined) {
                     AtD.callback_f.error(status + ": " + error);
                 }
             },
-        
+
             success : function (data) {
                 /* apparently IE likes to return XML as plain text-- work around from:
                    http://docs.jquery.com/Specifying_the_Data_Type_for_AJAX_Requests */
-    
+
                 var xml;
                 if (typeof data === "string") {
                     xml = new ActiveXObject("Microsoft.XMLDOM");
@@ -101,14 +101,14 @@ define(function (require, exports, module) {
                 } else {
                     xml = data;
                 }
-    
+
                 if (AtD.core.hasErrorMessage(xml)) {
                     if (AtD.callback_f !== undefined && AtD.callback_f.error !== undefined) {
                         AtD.callback_f.error(AtD.core.getErrorMessage(xml));
                     }
                     return;
                 }
-    
+
                 /* on with the task of processing and highlighting errors */
                 var results = AtD.core.processXML(xml);
                 if (AtD.callback_f !== undefined && AtD.callback_f.markMyWords !== undefined) {
@@ -125,41 +125,41 @@ define(function (require, exports, module) {
             }
         });
     };
-        
 
-    
+
+
     /*
-     * Set prototypes used by AtD Core UI 
+     * Set prototypes used by AtD Core UI
      */
     AtD.initCoreModule = function () {
         var core = new AtDCore();
-    
+
         core.hasClass = function (node, className) {
             return $(node).hasClass(className);
         };
-    
+
         core.map = $.map;
-    
+
         core.contents = function (node) {
             return $(node).contents();
         };
-    
+
         core.replaceWith = function (old_node, new_node) {
             return $(old_node).replaceWith(new_node);
         };
-    
+
         core.findSpans = function (parent) {
             return $.makeArray(parent.find('span'));
         };
-    
+
         core.create = function (node_html, isTextNode) {
             return $('<span class="mceItemHidden">' + node_html + '</span>');
         };
-    
+
         core.remove = function (node) {
             return $(node).remove();
         };
-    
+
         core.removeParent = function (node) {
             /* unwrap exists in jQuery 1.4+ only. Thankfully because replaceWith as-used here won't work in 1.4 */
             if ($(node).unwrap) {
@@ -168,16 +168,16 @@ define(function (require, exports, module) {
                 return $(node).replaceWith($(node).html());
             }
         };
-    
+
         core.getAttrib = function (node, name) {
             return $(node).attr(name);
         };
-    
+
         return core;
     };
-    
+
     AtD.core = AtD.initCoreModule();
 
     module.exports.AtD = AtD;
-   
+
 });

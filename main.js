@@ -68,14 +68,14 @@ define(function (require, exports, module) {
     var _getText = function () {
         var returnText = null,
             ed = EditorManager.getFocusedEditor();
-        
+
         if (ed) {
             returnText = EditorManager.getFocusedEditor().getSelectedText();
             if (!returnText) {
                 returnText = ed.document.getText();
             }
         }
-        
+
         return returnText;
     };
 
@@ -164,7 +164,7 @@ define(function (require, exports, module) {
             token = cm.getRange(start, end);
             if (prevToken.valueOf() === token.valueOf()) {
                 keepSearchingForWordEnd = false;
-                // todo return invalid boundary if no good boundary was found                
+                // todo return invalid boundary if no good boundary was found
             }
         }
 
@@ -173,12 +173,12 @@ define(function (require, exports, module) {
             end: end
         };
     }
-    
+
     var _clearSpellcheck;
-    
+
     // -----------------------------------------
     // initiate spell check
-    // -----------------------------------------  
+    // -----------------------------------------
     var _check_spelling = function () {
         if (lang === "en") {
             spellCheck.AtD.rpc = 'http://service.afterthedeadline.com';
@@ -202,13 +202,13 @@ define(function (require, exports, module) {
         wordErrorMap = [];
 
         _clearSpellcheck();
-        
+
         textMarkers = [];
         textToCheck = _getText();
         if (textToCheck) {
             spellCheck.AtD.check(textToCheck, resultHandler);
         }
-        
+
         lang = "en";
     };
 
@@ -240,7 +240,7 @@ define(function (require, exports, module) {
 
     // -----------------------------------------
     // brackets menu item
-    // ----------------------------------------- 
+    // -----------------------------------------
     var buildMenu = function (m) {
         m.addMenuDivider();
         m.addMenuItem(CHECK_SPELLING);
@@ -263,7 +263,7 @@ define(function (require, exports, module) {
     CommandManager.register("Check Spelling - Español", CHECK_SPELLING_ES, _check_spelling_es);
 
     CommandManager.register("Check Spelling - Português", CHECK_SPELLING_PT, _check_spelling_pt);
-    
+
     CommandManager.register("Clear markers", CLEAR_SPELLCHECK_MARKERS, _clearSpellcheck);
 
 
@@ -275,7 +275,7 @@ define(function (require, exports, module) {
 
     // -----------------------------------------
     // AtD result handler
-    // -----------------------------------------    
+    // -----------------------------------------
 
     resultHandler.ready = function (count) {
         //console.log("ready called: count " + count);
@@ -284,7 +284,7 @@ define(function (require, exports, module) {
     resultHandler.success = function (count) {
         //console.log("success called: count " + count);
     };
-    
+
     function selectionEmpty(selection) {
 
         return (selection.start.line === selection.end.line &&
@@ -307,22 +307,22 @@ define(function (require, exports, module) {
 
 
         selectionBoundary = targetEditor.getSelection();
-        
+
         var selStart,
             selEnd;
-        
+
         if (!selectionEmpty(selectionBoundary)) {
             validSelection = true;
             selStart = targetEditor.indexFromPos(selectionBoundary.start);
             selEnd = targetEditor.indexFromPos(selectionBoundary.end);
         } else {
             var ed = EditorManager.getFocusedEditor();
-            
+
             validSelection = false;
             selStart = 0;
             selEnd = ed.document.getText().length - 1;
         }
-        
+
         var wordCursor = [];
         i = 0;
         // todo mark repeat words correctly
@@ -398,13 +398,13 @@ define(function (require, exports, module) {
                                 textMarkers[i] = markText(cm, boundaries.start, {
                                     line: boundaries.start.line,
                                     ch: boundaries.start.ch + token.length
-                                }, "underline AtD_hints_available");
+                                }, "SpellCheckUnderline AtD_hints_available");
                                 i++;
                                 targetEditor.setCursorPos(cmPos.line, cmPos.ch + token.length - 1);
                             }
                         }
                     } else {
-                        //console.log(" cannot find more instances of  " + word);  
+                        //console.log(" cannot find more instances of  " + word);
                         markMore = false;
                     }
 
@@ -419,13 +419,13 @@ define(function (require, exports, module) {
     // Hint Provider for CodeHintmanager
     // -----------------------------------------
     /**
-     * Registers as HintProvider as an object that is able to provide code hints. 
+     * Registers as HintProvider as an object that is able to provide code hints.
      */
     function SpellingHints() {}
 
     /**
      * Get the spelling hints for a given word
-     * @param {Object.<queryStr: string, ...} query -- a query object with a required property queryStr 
+     * @param {Object.<queryStr: string, ...} query -- a query object with a required property queryStr
      *     that will be used to filter out code hints
      * @return {Array.<string>}
      */
@@ -472,7 +472,7 @@ define(function (require, exports, module) {
         var boundaries = findWordBoundariesForCursor(editor, cursor),
             cm = editor._codeMirror,
             token;
-        
+
         if (validSelection) {
             if (cm.indexFromPos(selectionBoundary.start) <= cm.indexFromPos(boundaries.start) &&
                     cm.indexFromPos(selectionBoundary.end) >= cm.indexFromPos(boundaries.end) - 1) {
@@ -500,16 +500,16 @@ define(function (require, exports, module) {
     /**
      * Determines whether HTML tag hints are available in the current editor
      * context.
-     * 
-     * @param {Editor} editor 
+     *
+     * @param {Editor} editor
      * A non-null editor object for the active window.
      *
-     * @param {String} implicitChar 
+     * @param {String} implicitChar
      * Either null, if the hinting request was explicit, or a single character
      * that represents the last insertion and that indicates an implicit
      * hinting request.
      *
-     * @return {Boolean} 
+     * @return {Boolean}
      * Determines whether the current provider is able to provide hints for
      * the given editor context and, in case implicitChar is non- null,
      * whether it is appropriate to do so.
@@ -520,7 +520,7 @@ define(function (require, exports, module) {
 
     SpellingHints.prototype.getHints = function (implicitChar) {
         var result = [];
-        
+
         if (textMarkers.length > 0) {
             var token = spellingHints.getQueryInfo(targetEditor, targetEditor.getCursorPos());
             result = spellingHints.search(token);
@@ -534,12 +534,12 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Inserts a given HTML tag hint into the current editor context. 
-     * 
-     * @param {String} hint 
+     * Inserts a given HTML tag hint into the current editor context.
+     *
+     * @param {String} hint
      * The hint to be inserted into the editor context.
-     * 
-     * @return {Boolean} 
+     *
+     * @return {Boolean}
      * Indicates whether the manager should follow hint insertion with an
      * additional explicit hint request.
      */
@@ -559,7 +559,7 @@ define(function (require, exports, module) {
 
         return false;
     };
-    
+
 
 
     // -----------------------------------------
