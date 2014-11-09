@@ -1,9 +1,9 @@
-span.underline {
-   position: relative;
-   display: inline-block;
-   background-image: url(img/underline.gif);
-   background-position: bottom;
-   background-repeat: repeat-x;
-   cursor: pointer;
-   background-color: yellow;
+span.SpellCheckUnderline {
+    position: relative;
+    display: inline-block;
+    border-bottom: dotted 1px red;
+    background-position: bottom;
+    background-repeat: repeat-x;
+    cursor: pointer;
+    background-color: yellow;
 }
