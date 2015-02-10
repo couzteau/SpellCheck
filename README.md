@@ -31,6 +31,10 @@ To enable more languages (i.e. German, French, Spanish or Portuguese) uncomment 
     _m.addMenuItem(CHECK_SPELLING_DE);_
 ##Releases
 ### Jun 16, 2014
+0.5.8 - fix incompatibility with `scriptin/brackets-indent-softwraps`:
+- https://github.com/scriptin/brackets-indent-softwraps/issues/4
+- https://github.com/couzteau/SpellCheck/issues/13
+### Jun 16, 2014
 0.5.7 - Add command to clear markers. Fix issue where some words would not be marked for correction if no selection was made. 
 
 ### Jun 16, 2014
