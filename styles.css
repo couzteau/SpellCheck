@@ -1,6 +1,6 @@
 span.underline {
    position: relative;
-   display: inline-block;
+   display: inline;
    background-image: url(img/underline.gif);
    background-position: bottom;
    background-repeat: repeat-x;
