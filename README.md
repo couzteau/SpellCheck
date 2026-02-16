@@ -23,7 +23,7 @@ or
 
 ## Usage
 
-- Select text and then select the command _Check Spelling - English_ from the _Edit_ menu, or by right clicking and selecting the command from the context menu. This will hi-lite any words in the selection that have spelling hints available. If no text selection is made the whole document will be checked
+- Select text and then select the command _Check Spelling - English_ from the _Edit_ menu, or by right clicking and selecting the command from the context menu. This will highlight any words in the selection that have spelling hints available. If no text selection is made the whole document will be checked
 - Navigate cursor to a high-lighted word and hit CTRL-space to open the hint list dropdown.
 - select suggestion from dropdown to apply
 
@@ -50,7 +50,7 @@ To enable more languages (i.e. German, French, Spanish or Portuguese) uncomment 
 0.5.4 - Update text high lighting for compatibility with code mirror 2 and 3. Brackets 0.20 / Sprint 20 switches to CM3. Since Edge Code is still on CM2 backwards compatibilty is maintained. 
 
 ### Jan 29, 2013
-0.5.3 - Implemented API changes in CodeHintManager introduced in Brackes 0.18 / Sprint 18. Change is not backwards compatible. Moving forward only buils >= 0.18.x are supported.
+0.5.3 - Implemented API changes in CodeHintManager introduced in Brackets 0.18 / Sprint 18. Change is not backwards compatible. Moving forward only builds >= 0.18.x are supported.
 
 ### Nov 15, 2012
 0.5.2 - Usability improvements: Fixed bugs around text selection, text marking, capitalization, containing a text to be hinted.
@@ -58,7 +58,7 @@ To enable more languages (i.e. German, French, Spanish or Portuguese) uncomment 
 
 ### Nov 7, 2012
 0.5.1 - Usability improvements: Fixed bugs around text selection, text marking, capitalization, containing a text to be hinted.
-0.5.0 - Spell checking is now functioning, project is barely out of the woods, still aplha quality - uses after the dead line web service: http://afterthedeadline.com/
+0.5.0 - Spell checking is now functioning, project is barely out of the woods, still alpha quality - uses after the dead line web service: http://afterthedeadline.com/
 
 Created by Jochen Hagenstroem  
 https://github.com/couzteau/SpellCheck  
